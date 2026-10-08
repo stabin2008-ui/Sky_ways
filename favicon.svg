@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="swGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B192C"/>
+      <stop offset="100%" stop-color="#1E3E62"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#swGrad)"/>
+  <!-- Shield outline -->
+  <path d="M32 10 L48 16 V28 C48 39 41 49 32 54 C23 49 16 39 16 28 V16 Z" fill="none" stroke="url(#goldGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- S letter & road stylized curve -->
+  <path d="M38 23 C36 21 32 20.5 28 22 C25 23 24 25.5 25.5 28 C27 30.5 35 31.5 37 34.5 C39 37.5 37.5 41 33 42 C29 42.5 25 41 24 39" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Star accent for 25 years -->
+  <polygon points="32,27 33.2,29.8 36,30.2 34,32 34.5,34.8 32,33.3 29.5,34.8 30,32 28,30.2 30.8,29.8" fill="url(#goldGrad)" transform="translate(13, -12) scale(0.6)"/>
+</svg>

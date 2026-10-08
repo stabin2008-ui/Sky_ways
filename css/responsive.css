@@ -1,0 +1,123 @@
+/**
+ * SafeWay Travels - Responsive Optimization & Mobile Refinements
+ * =============================================================
+ * Ensures flawless experience on mobile phones, tablets, laptops & desktops.
+ */
+
+/* Safe area inset for modern mobile notches and home indicators */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .mobile-bottom-bar {
+    padding-bottom: env(safe-area-inset-bottom);
+    height: calc(var(--mobile-bar-height) + env(safe-area-inset-bottom));
+  }
+}
+
+/* Base Mobile Rules (Up to 480px) */
+@media (max-width: 480px) {
+  :root {
+    --header-height: 68px;
+  }
+
+  .top-bar {
+    display: none; /* Hide top bar on very small screens to maximize viewport */
+  }
+
+  .hero-section {
+    padding: 2.75rem 0 3.5rem;
+  }
+
+  .hero-trust-badge {
+    padding: 6px 12px;
+  }
+
+  .hero-trust-text {
+    font-size: 0.775rem;
+  }
+
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .hero-ctas {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .hero-ctas .btn {
+    width: 100%;
+  }
+
+  .hero-meta-points {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .booking-header-bar {
+    padding: var(--space-5) var(--space-4);
+  }
+
+  .booking-form-inner {
+    padding: var(--space-4);
+  }
+
+  .contact-card-info, .contact-form-card {
+    padding: var(--space-5);
+  }
+
+  .service-card, .fleet-card, .pricing-card, .testimonial-card {
+    padding: var(--space-5);
+  }
+
+  .modal-card {
+    margin: var(--space-2);
+    border-radius: var(--radius-lg);
+  }
+
+  .modal-body {
+    padding: var(--space-4);
+  }
+
+  .modal-actions {
+    gap: var(--space-2);
+  }
+}
+
+/* Tablet Optimizations (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  .hero-ctas {
+    flex-direction: row;
+  }
+}
+
+/* Accessibility: Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print Stylesheet */
+@media print {
+  .top-bar, .navbar, .mobile-bottom-bar, .modal-backdrop, .hero-ctas, .btn {
+    display: none !important;
+  }
+
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+  }
+
+  .hero-section {
+    background: none !important;
+    color: #000000 !important;
+    padding: 0 !important;
+  }
+
+  .hero-title, .hero-subtitle {
+    color: #000000 !important;
+  }
+}

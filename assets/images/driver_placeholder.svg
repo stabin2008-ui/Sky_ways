@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 700" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="50%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#0B132B"/>
+    </linearGradient>
+    <linearGradient id="goldAcc" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#1E3E62" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#0B192C" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="600" height="700" rx="24" fill="url(#bgGrad)"/>
+  <circle cx="300" cy="280" r="240" fill="url(#glow)"/>
+
+  <!-- Subtle grid lines for modern architectural feel -->
+  <g stroke="rgba(255,255,255,0.04)" stroke-width="1">
+    <line x1="0" y1="175" x2="600" y2="175"/>
+    <line x1="0" y1="350" x2="600" y2="350"/>
+    <line x1="0" y1="525" x2="600" y2="525"/>
+    <line x1="150" y1="0" x2="150" y2="700"/>
+    <line x1="300" y1="0" x2="300" y2="700"/>
+    <line x1="450" y1="0" x2="450" y2="700"/>
+  </g>
+
+  <!-- Outer frame border with gold gradient accent -->
+  <rect x="20" y="20" width="560" height="660" rx="20" fill="none" stroke="url(#goldAcc)" stroke-width="1.5" stroke-opacity="0.4" stroke-dasharray="8 6"/>
+
+  <!-- Steering Wheel & Driver Silhouette Graphic -->
+  <g transform="translate(300, 260)">
+    <!-- Outer Steering Wheel Rim -->
+    <circle cx="0" cy="0" r="140" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="14"/>
+    <circle cx="0" cy="0" r="140" fill="none" stroke="url(#goldAcc)" stroke-width="4" stroke-opacity="0.7"/>
+    <!-- Wheel Hub -->
+    <circle cx="0" cy="0" r="38" fill="#1E293B" stroke="url(#goldAcc)" stroke-width="2"/>
+    <path d="M0 -38 L0 -133" stroke="rgba(255,255,255,0.2)" stroke-width="8" stroke-linecap="round"/>
+    <path d="M-34 16 L-122 66" stroke="rgba(255,255,255,0.2)" stroke-width="8" stroke-linecap="round"/>
+    <path d="M34 16 L122 66" stroke="rgba(255,255,255,0.2)" stroke-width="8" stroke-linecap="round"/>
+    
+    <!-- Professional Driver Silhouette in center -->
+    <!-- Head -->
+    <circle cx="0" cy="-60" r="32" fill="#E2E8F0" opacity="0.9"/>
+    <!-- Collar / Chauffeur suit shoulders -->
+    <path d="M-65 24 C-65 -20 -35 -34 0 -34 C35 -34 65 -20 65 24 C50 35 -50 35 -65 24 Z" fill="#94A3B8" opacity="0.85"/>
+    <polygon points="0,-30 -14,-4 0,16 14,-4" fill="#0F172A" opacity="0.9"/>
+    <!-- Gold Star on Hub -->
+    <polygon points="0,-10 3,-3 10,-3 4,2 6,9 0,5 -6,9 -4,2 -10,-3 -3,-3" fill="url(#goldAcc)"/>
+  </g>
+
+  <!-- Trust Badge Card overlay at bottom -->
+  <g transform="translate(50, 480)">
+    <rect width="500" height="150" rx="16" fill="rgba(15, 23, 42, 0.92)" stroke="url(#goldAcc)" stroke-width="1.5"/>
+    
+    <!-- Experience Pill -->
+    <rect x="25" y="24" width="135" height="28" rx="14" fill="#D97706" fill-opacity="0.2" stroke="#F59E0B" stroke-width="1"/>
+    <text x="92" y="42" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="700" fill="#FBBF24" text-anchor="middle" letter-spacing="1">SINCE 1999</text>
+    
+    <text x="25" y="82" font-family="'Outfit', sans-serif" font-size="22" font-weight="700" fill="#FFFFFF">25 Years of Driving Trust</text>
+    <text x="25" y="106" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="500" fill="#94A3B8">Professional chauffeur profile image can be added here</text>
+    <text x="25" y="126" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="600" fill="#F59E0B">Photo replacement: replace assets/images/driver_placeholder.svg</text>
+  </g>
+</svg>
