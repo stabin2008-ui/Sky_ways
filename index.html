@@ -473,18 +473,18 @@
     <section class="fleet-section section-padding" id="fleet">
       <div class="container">
         <div class="section-header">
-          <div class="section-tag">Our Vehicle Options</div>
+          <div class="section-tag">Premium Fleet Gallery</div>
           <h2 class="section-title">Well-Maintained, Clean AC Vehicles</h2>
           <p class="section-subtitle">
-            Multiple vehicle categories tailored to your travel group size, luggage, and journey duration. Select a preferred vehicle to prefill your booking request.
+            Explore our sedan and spacious MUV options. Switch between authentic exterior and interior photos, click any image to enlarge, and select your preferred vehicle for booking.
           </p>
         </div>
 
-        <!-- Honest Notice Banner -->
+        <!-- Authentic Reference Notice Banner -->
         <div class="fleet-notice-banner" role="note">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
           <div>
-            <strong>Fleet Information Note:</strong> We maintain a versatile fleet of comfortable, sanitized AC vehicles. The vehicle categories below represent our standard fleet types. Exact models and requests are confirmed when you contact us.
+            <strong>Vehicle images for reference:</strong> SafeWay Travels provides clean, sanitized AC vehicles. Representative model photographs are displayed below for reference; exact vehicle models and options are confirmed upon inquiry.
           </div>
         </div>
 
@@ -582,6 +582,20 @@
               <span>2. Trip Details</span>
             </div>
 
+            <!-- Selected Vehicle Display Banner (from Fleet Gallery selection) -->
+            <div class="selected-vehicle-banner" id="selectedVehicleBanner" style="display: none;" role="region" aria-live="polite">
+              <div class="selected-vehicle-banner-left">
+                <span class="selected-vehicle-banner-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9L2 12v4c0 .6.4 1 1 1h2"></path><circle cx="7" cy="17" r="2"></circle><path d="M9 17h6"></path><circle cx="17" cy="17" r="2"></circle></svg>
+                </span>
+                <div class="selected-vehicle-text-group">
+                  <span class="selected-vehicle-label">Selected Fleet Vehicle:</span>
+                  <strong class="selected-vehicle-name" id="selectedVehicleDisplay">Toyota Innova Crysta — MUV</strong>
+                </div>
+              </div>
+              <button type="button" class="btn-clear-vehicle" id="btnClearVehicle" aria-label="Change vehicle selection">Change</button>
+            </div>
+
             <div class="form-row-2">
               <div class="form-group">
                 <label for="serviceType" class="form-label form-label-required">Service Type</label>
@@ -599,9 +613,11 @@
                 <label for="vehiclePreference" class="form-label">Vehicle Preference</label>
                 <select id="vehiclePreference" name="vehiclePreference" class="form-control">
                   <option value="Any Available (Comfort AC)" selected>Any Available (Comfort AC)</option>
-                  <option value="Executive Sedan (4 Seater AC)">Executive Sedan (4 Seater AC)</option>
-                  <option value="Spacious Family SUV (6-7 Seater AC)">Spacious Family SUV (6-7 Seater AC)</option>
-                  <option value="Compact City Cab (3-4 Seater AC)">Compact City Cab (3-4 Seater AC)</option>
+                  <option value="Toyota Etios — Sedan">Toyota Etios — Sedan</option>
+                  <option value="Toyota Innova Crysta — MUV">Toyota Innova Crysta — MUV</option>
+                  <option value="Maruti Suzuki Ertiga — MUV">Maruti Suzuki Ertiga — MUV</option>
+                  <option value="Toyota Rumion — MUV">Toyota Rumion — MUV</option>
+                  <option value="Toyota Innova Hycross — MUV">Toyota Innova Hycross — MUV</option>
                   <option value="Custom Group Vehicle">Custom Group Vehicle</option>
                 </select>
               </div>
@@ -1029,6 +1045,58 @@
             <span>Copy Message Details</span>
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VEHICLE FLEET LIGHTBOX MODAL -->
+  <div class="lightbox-modal" id="fleetLightbox" role="dialog" aria-modal="true" aria-labelledby="lightboxTitle" aria-hidden="true">
+    <div class="lightbox-backdrop" id="lightboxBackdrop"></div>
+    <div class="lightbox-card">
+      <div class="lightbox-header">
+        <div class="lightbox-header-info">
+          <span class="lightbox-badge" id="lightboxCategoryBadge">SUV / MUV</span>
+          <h3 class="lightbox-title" id="lightboxTitle">Toyota Innova Crysta</h3>
+        </div>
+        <button type="button" class="lightbox-close-btn" id="lightboxCloseBtn" aria-label="Close vehicle photos">
+          <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.2" fill="none" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div class="lightbox-body">
+        <div class="lightbox-stage">
+          <button type="button" class="lightbox-nav-btn lightbox-prev-btn" id="lightboxPrevBtn" aria-label="Previous photo">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <div class="lightbox-img-frame">
+            <img id="lightboxImg" src="" alt="SafeWay Travels vehicle photo" loading="eager">
+            <div class="lightbox-view-indicator" id="lightboxViewIndicator">Exterior View</div>
+          </div>
+          <button type="button" class="lightbox-nav-btn lightbox-next-btn" id="lightboxNextBtn" aria-label="Next photo">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </div>
+
+        <div class="lightbox-controls">
+          <div class="lightbox-view-toggles" role="tablist" aria-label="Vehicle photo view selection">
+            <button type="button" class="lightbox-tab-btn active" id="lightboxTabExterior" role="tab" aria-selected="true">Exterior Photo</button>
+            <button type="button" class="lightbox-tab-btn" id="lightboxTabInterior" role="tab" aria-selected="false">Interior / Cabin</button>
+          </div>
+          <p class="lightbox-reference-note">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            Vehicle images for reference. Authentic representative model photo.
+          </p>
+        </div>
+      </div>
+
+      <div class="lightbox-footer">
+        <div class="lightbox-specs-summary" id="lightboxSpecsSummary">
+          <!-- Populated dynamically -->
+        </div>
+        <button type="button" class="btn btn-accent btn-lg" id="lightboxSelectBtn">
+          <span>Select This Vehicle for Booking</span>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
       </div>
     </div>
   </div>

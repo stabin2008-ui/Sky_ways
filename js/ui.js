@@ -15,6 +15,7 @@ const SafeWayUI = (function () {
     setupFaqAccordion();
     setupSmoothScrollLinks();
     renderFleetCards();
+    setupFleetLightbox();
     renderPricingCards();
     renderTestimonialCards();
     renderTrustPillars();
@@ -69,10 +70,10 @@ const SafeWayUI = (function () {
     if (closeBtn) closeBtn.addEventListener("click", closeDrawer);
     if (drawerBackdrop) drawerBackdrop.addEventListener("click", closeDrawer);
 
-    // Close when clicking nav links in mobile drawer
-    const drawerLinks = navDrawer.querySelectorAll(".nav-link, .btn-drawer-cta");
-    drawerLinks.forEach(link => {
-      link.addEventListener("click", () => {
+    // Close when clicking ANY interactive link or button inside mobile drawer
+    const drawerInteractiveElements = navDrawer.querySelectorAll(".nav-link, .btn, a, button:not(#drawerCloseBtn)");
+    drawerInteractiveElements.forEach(el => {
+      el.addEventListener("click", () => {
         closeDrawer();
       });
     });
@@ -158,7 +159,7 @@ const SafeWayUI = (function () {
 
   /**
    * Renders Fleet Cards dynamically from central config
-   * NOTE: Owner can easily update names, capacities, images in config.js!
+   * Supports exterior/interior toggle, lightbox viewer, and booking integration
    */
   function renderFleetCards() {
     const container = document.getElementById("fleetContainer");
@@ -166,50 +167,68 @@ const SafeWayUI = (function () {
 
     const vehicles = window.SafeWayConfig.fleet.vehicles;
 
-    container.innerHTML = vehicles.map(v => `
-      <div class="fleet-card" data-vehicle-id="${v.id}">
+    container.innerHTML = vehicles.map((v, index) => `
+      <div class="fleet-card" id="fleetCard-${v.id}" data-vehicle-id="${v.id}" data-booking-value="${escapeHtml(v.bookingValue || v.vehicleName)}" data-vehicle-name="${escapeHtml(v.vehicleName)}">
         <div class="fleet-media">
-          ${v.vehicleImage ? `
-            <img src="${escapeHtml(v.vehicleImage)}" alt="${escapeHtml(v.vehicleName)}" class="fleet-img" loading="lazy">
-          ` : `
-            <div class="fleet-placeholder">
-              <div class="fleet-placeholder-badge">${escapeHtml(v.editablePlaceholderTag || 'Vehicle Category')}</div>
-              <div class="fleet-icon-symbol" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.6">
-                  <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9L2 12v4c0 .6.4 1 1 1h2"></path>
-                  <circle cx="7" cy="17" r="2"></circle>
-                  <path d="M9 17h6"></path>
-                  <circle cx="17" cy="17" r="2"></circle>
-                </svg>
-              </div>
-              <p class="fleet-placeholder-note">Owner can customize vehicle model &amp; photo</p>
-            </div>
-          `}
-          <div class="fleet-status-pill">
-            <span class="status-dot"></span>
-            ${escapeHtml(v.statusText)}
+          <div class="fleet-img-container" data-vehicle-id="${v.id}">
+            <img src="${escapeHtml(v.exteriorImage)}" 
+                 alt="${escapeHtml(v.exteriorAlt)}" 
+                 class="fleet-img" 
+                 id="fleetImg-${v.id}" 
+                 loading="lazy" 
+                 width="600" 
+                 height="375">
           </div>
+
+          <!-- Exterior / Interior View Switcher -->
+          <div class="fleet-view-toggles" role="tablist" aria-label="${escapeHtml(v.vehicleName)} photo views">
+            <button type="button" class="view-toggle-pill active" data-vehicle-id="${v.id}" data-view="exterior" role="tab" aria-selected="true" aria-controls="fleetImg-${v.id}">
+              Exterior
+            </button>
+            <button type="button" class="view-toggle-pill" data-vehicle-id="${v.id}" data-view="interior" role="tab" aria-selected="false" aria-controls="fleetImg-${v.id}">
+              Interior
+            </button>
+          </div>
+
+          <!-- Reference Notice Pill -->
+          <div class="fleet-ref-badge" title="Representative vehicle image for reference">
+            <span>Reference Photo</span>
+          </div>
+
+          <!-- Click to Enlarge / Lightbox Trigger -->
+          <button type="button" class="fleet-zoom-trigger" data-vehicle-id="${v.id}" aria-label="Enlarge ${escapeHtml(v.vehicleName)} photo in lightbox">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <polyline points="9 21 3 21 3 15"></polyline>
+              <line x1="21" y1="3" x2="14" y2="10"></line>
+              <line x1="3" y1="21" x2="10" y2="14"></line>
+            </svg>
+            <span>Enlarge</span>
+          </button>
         </div>
 
         <div class="fleet-body">
-          <div class="fleet-type-tag">${escapeHtml(v.vehicleType)}</div>
+          <div class="fleet-header-row">
+            <span class="fleet-type-tag">${escapeHtml(v.category)}</span>
+            <span class="fleet-selected-tag" style="display: none;">Selected ✓</span>
+          </div>
           <h3 class="fleet-name">${escapeHtml(v.vehicleName)}</h3>
           <p class="fleet-desc">${escapeHtml(v.description)}</p>
 
           <div class="fleet-specs-grid">
-            <div class="spec-item">
+            <div class="spec-item" title="Seating Capacity">
               <span class="spec-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
               </span>
               <span class="spec-val">${escapeHtml(v.seatingCapacity)}</span>
             </div>
-            <div class="spec-item">
+            <div class="spec-item" title="Luggage Space">
               <span class="spec-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
               </span>
               <span class="spec-val">${escapeHtml(v.luggageCapacity)}</span>
             </div>
-            <div class="spec-item">
+            <div class="spec-item" title="Air Conditioning">
               <span class="spec-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
               </span>
@@ -217,15 +236,55 @@ const SafeWayUI = (function () {
             </div>
           </div>
 
-          <button type="button" class="btn btn-outline btn-block btn-select-vehicle" data-vehicle-name="${escapeHtml(v.vehicleName)}">
-            <span>Select Vehicle</span>
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
+          <div class="fleet-card-actions">
+            <button type="button" class="btn btn-accent btn-block btn-select-vehicle" data-vehicle-name="${escapeHtml(v.bookingValue || v.vehicleName)}" data-vehicle-id="${v.id}">
+              <span>Select Vehicle</span>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+            <button type="button" class="btn btn-outline btn-block btn-view-gallery" data-vehicle-id="${v.id}">
+              <span>View Photos (Exterior &amp; Cabin)</span>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+            </button>
+          </div>
         </div>
       </div>
     `).join("");
 
-    // Bind Select Vehicle clicks
+    // Bind Exterior / Interior view switcher buttons on cards
+    container.querySelectorAll(".view-toggle-pill").forEach(btn => {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        const vId = this.getAttribute("data-vehicle-id");
+        const targetView = this.getAttribute("data-view");
+        const card = document.getElementById(`fleetCard-${vId}`);
+        const img = document.getElementById(`fleetImg-${vId}`);
+        const vehicle = vehicles.find(item => item.id === vId);
+
+        if (!card || !img || !vehicle) return;
+
+        // Update pills active state
+        card.querySelectorAll(".view-toggle-pill").forEach(pill => {
+          const isTarget = pill === this;
+          pill.classList.toggle("active", isTarget);
+          pill.setAttribute("aria-selected", isTarget ? "true" : "false");
+        });
+
+        // Smooth image switch
+        img.style.opacity = "0.4";
+        setTimeout(() => {
+          if (targetView === "interior") {
+            img.src = vehicle.interiorImage;
+            img.alt = vehicle.interiorAlt;
+          } else {
+            img.src = vehicle.exteriorImage;
+            img.alt = vehicle.exteriorAlt;
+          }
+          img.style.opacity = "1";
+        }, 120);
+      });
+    });
+
+    // Bind Select Vehicle buttons
     container.querySelectorAll(".btn-select-vehicle").forEach(btn => {
       btn.addEventListener("click", function () {
         const vehicleName = this.getAttribute("data-vehicle-name");
@@ -233,6 +292,218 @@ const SafeWayUI = (function () {
         showToast(`Selected "${vehicleName}" in booking form.`);
       });
     });
+
+    // Bind Lightbox trigger clicks (Zoom icon, Card Media, and View Gallery button)
+    container.querySelectorAll(".fleet-zoom-trigger, .btn-view-gallery").forEach(btn => {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        const vId = this.getAttribute("data-vehicle-id");
+        const card = document.getElementById(`fleetCard-${vId}`);
+        const activePill = card ? card.querySelector(".view-toggle-pill.active") : null;
+        const currentView = activePill ? activePill.getAttribute("data-view") : "exterior";
+        openFleetLightbox(vId, currentView);
+      });
+    });
+
+    // Also clicking directly on the image opens lightbox
+    container.querySelectorAll(".fleet-img-container").forEach(el => {
+      el.addEventListener("click", function () {
+        const vId = this.getAttribute("data-vehicle-id");
+        const card = document.getElementById(`fleetCard-${vId}`);
+        const activePill = card ? card.querySelector(".view-toggle-pill.active") : null;
+        const currentView = activePill ? activePill.getAttribute("data-view") : "exterior";
+        openFleetLightbox(vId, currentView);
+      });
+    });
+  }
+
+  // Active Lightbox State
+  let lightboxState = {
+    currentIndex: 0,
+    currentView: "exterior" // "exterior" | "interior"
+  };
+
+  /**
+   * Initializes Accessible Fleet Lightbox
+   */
+  function setupFleetLightbox() {
+    const lightboxModal = document.getElementById("fleetLightbox");
+    const closeBtn = document.getElementById("lightboxCloseBtn");
+    const backdrop = document.getElementById("lightboxBackdrop");
+    const prevBtn = document.getElementById("lightboxPrevBtn");
+    const nextBtn = document.getElementById("lightboxNextBtn");
+    const tabExterior = document.getElementById("lightboxTabExterior");
+    const tabInterior = document.getElementById("lightboxTabInterior");
+    const selectBtn = document.getElementById("lightboxSelectBtn");
+
+    if (!lightboxModal) return;
+
+    function closeLightbox() {
+      lightboxModal.classList.remove("lightbox-open");
+      lightboxModal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+    }
+
+    if (closeBtn) closeBtn.addEventListener("click", closeLightbox);
+    if (backdrop) backdrop.addEventListener("click", closeLightbox);
+
+    // Escape closes lightbox
+    document.addEventListener("keydown", function (e) {
+      if (!lightboxModal.classList.contains("lightbox-open")) return;
+
+      if (e.key === "Escape") {
+        closeLightbox();
+      } else if (e.key === "ArrowLeft") {
+        cycleLightboxVehicle(-1);
+      } else if (e.key === "ArrowRight") {
+        cycleLightboxVehicle(1);
+      } else if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+        setLightboxView(lightboxState.currentView === "exterior" ? "interior" : "exterior");
+      }
+    });
+
+    if (prevBtn) {
+      prevBtn.addEventListener("click", function () {
+        cycleLightboxVehicle(-1);
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener("click", function () {
+        cycleLightboxVehicle(1);
+      });
+    }
+
+    if (tabExterior) {
+      tabExterior.addEventListener("click", function () {
+        setLightboxView("exterior");
+      });
+    }
+
+    if (tabInterior) {
+      tabInterior.addEventListener("click", function () {
+        setLightboxView("interior");
+      });
+    }
+
+    if (selectBtn) {
+      selectBtn.addEventListener("click", function () {
+        const vehicles = window.SafeWayConfig?.fleet?.vehicles || [];
+        const vehicle = vehicles[lightboxState.currentIndex];
+        if (vehicle) {
+          closeLightbox();
+          window.SafeWayBooking.selectVehicle(vehicle.bookingValue || vehicle.vehicleName, true);
+          showToast(`Selected "${vehicle.bookingValue || vehicle.vehicleName}" in booking form.`);
+        }
+      });
+    }
+  }
+
+  function openFleetLightbox(vehicleId, view = "exterior") {
+    const lightboxModal = document.getElementById("fleetLightbox");
+    const vehicles = window.SafeWayConfig?.fleet?.vehicles || [];
+    if (!lightboxModal || !vehicles.length) return;
+
+    let index = vehicles.findIndex(v => v.id === vehicleId);
+    if (index === -1) index = 0;
+
+    lightboxState.currentIndex = index;
+    lightboxState.currentView = view;
+
+    updateLightboxContent();
+
+    lightboxModal.classList.add("lightbox-open");
+    lightboxModal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+
+    const closeBtn = document.getElementById("lightboxCloseBtn");
+    if (closeBtn) {
+      setTimeout(() => closeBtn.focus(), 150);
+    }
+  }
+
+  function cycleLightboxVehicle(delta) {
+    const vehicles = window.SafeWayConfig?.fleet?.vehicles || [];
+    if (!vehicles.length) return;
+
+    let newIndex = lightboxState.currentIndex + delta;
+    if (newIndex < 0) newIndex = vehicles.length - 1;
+    if (newIndex >= vehicles.length) newIndex = 0;
+
+    lightboxState.currentIndex = newIndex;
+    updateLightboxContent();
+  }
+
+  function setLightboxView(view) {
+    lightboxState.currentView = view;
+    updateLightboxContent();
+  }
+
+  function updateLightboxContent() {
+    const vehicles = window.SafeWayConfig?.fleet?.vehicles || [];
+    const vehicle = vehicles[lightboxState.currentIndex];
+    if (!vehicle) return;
+
+    const titleEl = document.getElementById("lightboxTitle");
+    const catEl = document.getElementById("lightboxCategoryBadge");
+    const imgEl = document.getElementById("lightboxImg");
+    const indicatorEl = document.getElementById("lightboxViewIndicator");
+    const tabExterior = document.getElementById("lightboxTabExterior");
+    const tabInterior = document.getElementById("lightboxTabInterior");
+    const specsEl = document.getElementById("lightboxSpecsSummary");
+    const selectBtn = document.getElementById("lightboxSelectBtn");
+
+    const isInterior = lightboxState.currentView === "interior";
+
+    if (titleEl) titleEl.textContent = vehicle.vehicleName;
+    if (catEl) catEl.textContent = vehicle.category;
+
+    if (indicatorEl) {
+      indicatorEl.textContent = isInterior ? "Cabin / Interior View" : "Exterior View";
+    }
+
+    if (tabExterior) {
+      tabExterior.classList.toggle("active", !isInterior);
+      tabExterior.setAttribute("aria-selected", !isInterior ? "true" : "false");
+    }
+
+    if (tabInterior) {
+      tabInterior.classList.toggle("active", isInterior);
+      tabInterior.setAttribute("aria-selected", isInterior ? "true" : "false");
+    }
+
+    if (imgEl) {
+      imgEl.style.opacity = "0.3";
+      imgEl.src = isInterior ? vehicle.interiorImage : vehicle.exteriorImage;
+      imgEl.alt = isInterior ? vehicle.interiorAlt : vehicle.exteriorAlt;
+      setTimeout(() => {
+        imgEl.style.opacity = "1";
+      }, 100);
+    }
+
+    if (specsEl) {
+      specsEl.innerHTML = `
+        <span class="lightbox-spec-chip">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+          ${escapeHtml(vehicle.seatingCapacity)}
+        </span>
+        <span class="lightbox-spec-chip">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+          ${escapeHtml(vehicle.airConditioning)}
+        </span>
+        <span class="lightbox-spec-chip">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+          ${escapeHtml(vehicle.luggageCapacity)}
+        </span>
+      `;
+    }
+
+    if (selectBtn) {
+      const span = selectBtn.querySelector("span");
+      if (span) {
+        span.textContent = `Select ${vehicle.vehicleName} for Booking`;
+      }
+    }
   }
 
   /**

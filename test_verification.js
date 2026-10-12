@@ -3,7 +3,7 @@ const path = require('path');
 
 console.log('--- STARTING SAFEWAY TRAVELS AUTOMATED TEST SUITE ---');
 
-// 1. Check Files Existence
+// 1. Check Core & Fleet Files Existence
 const requiredFiles = [
   'index.html',
   'favicon.svg',
@@ -20,7 +20,18 @@ const requiredFiles = [
   'js/ui.js',
   'js/app.js',
   'assets/images/bengaluru_travel_hero.jpg',
-  'assets/images/driver_placeholder.svg'
+  'assets/images/driver_placeholder.svg',
+  // All 10 Authentic Fleet Images
+  'assets/images/fleet/toyota_etios_exterior.jpg',
+  'assets/images/fleet/toyota_etios_interior.jpg',
+  'assets/images/fleet/toyota_innova_crysta_exterior.jpg',
+  'assets/images/fleet/toyota_innova_crysta_interior.jpg',
+  'assets/images/fleet/maruti_suzuki_ertiga_exterior.jpg',
+  'assets/images/fleet/maruti_suzuki_ertiga_interior.jpg',
+  'assets/images/fleet/toyota_rumion_exterior.jpg',
+  'assets/images/fleet/toyota_rumion_interior.png',
+  'assets/images/fleet/toyota_innova_hycross_exterior.jpg',
+  'assets/images/fleet/toyota_innova_hycross_interior.jpg'
 ];
 
 let allFilesOk = true;
@@ -57,6 +68,27 @@ if (cfg.business.phoneRaw !== '9980838845') throw new Error('Phone mismatch');
 if (cfg.business.email !== 'ways63098@gmail.com') throw new Error('Email mismatch');
 if (cfg.business.yearsOfExperience !== 25) throw new Error('Experience mismatch');
 
+// Verify exact fleet vehicles in config
+const expectedVehicleModels = [
+  'Toyota Etios',
+  'Toyota Innova Crysta',
+  'Maruti Suzuki Ertiga',
+  'Toyota Rumion',
+  'Toyota Innova Hycross'
+];
+
+for (const model of expectedVehicleModels) {
+  const found = cfg.fleet.vehicles.find(v => v.vehicleName === model);
+  if (!found) throw new Error('Missing expected fleet vehicle model: ' + model);
+  if (!found.exteriorImage || !fs.existsSync(found.exteriorImage)) {
+    throw new Error('Missing exterior image for vehicle: ' + model);
+  }
+  if (!found.interiorImage || !fs.existsSync(found.interiorImage)) {
+    throw new Error('Missing interior image for vehicle: ' + model);
+  }
+  console.log(`  [OK] Vehicle Verified: ${model} (${found.category}) - Exterior & Interior present.`);
+}
+
 // 3. Test js/whatsapp.js
 global.navigator = { userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' };
 require('./js/whatsapp.js');
@@ -72,8 +104,8 @@ const testBookingData = {
   drop: 'BLR Kempegowda Airport',
   date: '2026-10-09',
   time: '05:30',
-  passengers: '3',
-  vehicle: 'Executive Sedan (4 Seater AC)',
+  passengers: '4',
+  vehicle: 'Toyota Innova Crysta — MUV',
   specialRequests: 'Flight delay buffer, Extra luggage'
 };
 
@@ -85,6 +117,7 @@ if (!msg.includes('Ramesh Kumar')) throw new Error('Name missing in WA message')
 if (!msg.includes('9980838845')) throw new Error('Phone missing in WA message');
 if (!msg.includes('Airport Transfers')) throw new Error('Service missing in WA message');
 if (!msg.includes('BLR Kempegowda Airport')) throw new Error('Drop missing in WA message');
+if (!msg.includes('Toyota Innova Crysta — MUV')) throw new Error('Selected vehicle missing in WA message');
 if (!msg.includes('Flight delay buffer')) throw new Error('Special requests missing in WA message');
 
 const url = wa.buildWhatsAppUrl(msg);
@@ -101,11 +134,20 @@ const expectedElements = [
   'ways63098@gmail.com',
   'id="bookingForm"',
   'id="bookingModal"',
+  'id="fleetLightbox"',
+  'id="lightboxCloseBtn"',
+  'id="lightboxImg"',
+  'id="selectedVehicleBanner"',
   'id="mainNavbar"',
   'id="mobileMenuBtn"',
   'id="navDrawer"',
   'class="mobile-bottom-bar"',
   'BOOK A CAB',
+  'Toyota Etios — Sedan',
+  'Toyota Innova Crysta — MUV',
+  'Maruti Suzuki Ertiga — MUV',
+  'Toyota Rumion — MUV',
+  'Toyota Innova Hycross — MUV',
   'assets/images/bengaluru_travel_hero.jpg',
   'assets/images/driver_placeholder.svg'
 ];
@@ -116,7 +158,7 @@ for (const item of expectedElements) {
   }
 }
 console.log('\n[HTML VALIDATION]');
-console.log('All expected element IDs, assets, and metadata verified in index.html.');
+console.log('All expected element IDs, assets, vehicles, and metadata verified in index.html.');
 
 console.log('\n======================================================');
 console.log('>>> ALL VERIFICATION TESTS PASSED SUCCESSFULLY! <<<');

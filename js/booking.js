@@ -21,82 +21,116 @@ const SafeWayBooking = (function () {
     setupDateInputConstraints();
     setupPhoneFormatting();
     setupSpecialRequestChips();
+    setupVehiclePreferenceSync();
     setupFormSubmission();
     setupModalEvents();
   }
 
   /**
-   * Ensures travel date cannot be in the past (Indian Standard Time compliant)
+   * Syncs dropdown changes and clear vehicle button with the banner and gallery
    */
-  function setupDateInputConstraints() {
-    const dateInput = document.getElementById("travelDate");
-    if (!dateInput) return;
+  function setupVehiclePreferenceSync() {
+    const vehicleSelect = document.getElementById("vehiclePreference");
+    const clearBtn = document.getElementById("btnClearVehicle");
 
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, "0");
-    const day = String(today.getDate()).padStart(2, "0");
-    const minDateString = `${year}-${month}-${day}`;
-
-    dateInput.min = minDateString;
-
-    // Default to today if empty
-    if (!dateInput.value) {
-      dateInput.value = minDateString;
+    if (vehicleSelect) {
+      vehicleSelect.addEventListener("change", function () {
+        const val = this.value;
+        if (val && !val.toLowerCase().includes("any available")) {
+          updateVehicleBannerAndCard(val);
+        } else {
+          hideVehicleBanner();
+          clearFleetCardHighlights();
+        }
+      });
     }
 
-    // Default time to next hour rounded if empty
-    const timeInput = document.getElementById("pickupTime");
-    if (timeInput && !timeInput.value) {
-      const nextHour = (today.getHours() + 1) % 24;
-      timeInput.value = `${String(nextHour).padStart(2, "0")}:00`;
+    if (clearBtn) {
+      clearBtn.addEventListener("click", function () {
+        if (vehicleSelect) {
+          vehicleSelect.selectedIndex = 0; // "Any Available (Comfort AC)"
+        }
+        hideVehicleBanner();
+        clearFleetCardHighlights();
+        if (window.SafeWayUI && window.SafeWayUI.showToast) {
+          window.SafeWayUI.showToast("Vehicle preference reset to Any Available.");
+        }
+      });
     }
   }
 
   /**
-   * Auto-formats / cleans Indian phone numbers
+   * Updates the selected vehicle banner in the booking form
    */
-  function setupPhoneFormatting() {
-    const phoneInput = document.getElementById("customerPhone");
-    if (!phoneInput) return;
+  function updateVehicleBannerAndCard(vehicleName) {
+    const banner = document.getElementById("selectedVehicleBanner");
+    const display = document.getElementById("selectedVehicleDisplay");
 
-    phoneInput.addEventListener("input", function (e) {
-      // Keep only numbers and plus
-      let val = e.target.value.replace(/[^\d+]/g, "");
-      e.target.value = val;
-      clearFieldError("customerPhone");
+    if (banner && display) {
+      display.textContent = vehicleName;
+      banner.style.display = "flex";
+      banner.classList.add("banner-pulse");
+      setTimeout(() => banner.classList.remove("banner-pulse"), 800);
+    }
+
+    // Highlight corresponding card in the fleet gallery
+    highlightFleetCard(vehicleName);
+  }
+
+  function hideVehicleBanner() {
+    const banner = document.getElementById("selectedVehicleBanner");
+    if (banner) {
+      banner.style.display = "none";
+    }
+  }
+
+  function highlightFleetCard(vehicleName) {
+    const cards = document.querySelectorAll(".fleet-card");
+    const cleanQuery = vehicleName.toLowerCase();
+
+    cards.forEach(card => {
+      const cardBookingVal = (card.getAttribute("data-booking-value") || "").toLowerCase();
+      const cardVehicleName = (card.getAttribute("data-vehicle-name") || "").toLowerCase();
+      const cardId = card.getAttribute("data-vehicle-id");
+      const isMatch = cardBookingVal.includes(cleanQuery) ||
+                      cleanQuery.includes(cardBookingVal) ||
+                      cleanQuery.includes(cardVehicleName);
+
+      const selectBtn = card.querySelector(".btn-select-vehicle");
+      const selectedTag = card.querySelector(".fleet-selected-tag");
+
+      if (isMatch) {
+        card.classList.add("fleet-card-selected");
+        if (selectBtn) {
+          selectBtn.classList.remove("btn-outline");
+          selectBtn.classList.add("btn-accent");
+          selectBtn.innerHTML = `<span>Selected ✓</span>`;
+        }
+        if (selectedTag) selectedTag.style.display = "inline-flex";
+      } else {
+        card.classList.remove("fleet-card-selected");
+        if (selectBtn) {
+          selectBtn.classList.remove("btn-accent");
+          selectBtn.classList.add("btn-outline");
+          selectBtn.innerHTML = `<span>Select Vehicle</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+        }
+        if (selectedTag) selectedTag.style.display = "none";
+      }
     });
   }
 
-  /**
-   * Quick chip toggles for special requests
-   */
-  function setupSpecialRequestChips() {
-    const chips = document.querySelectorAll(".special-chip");
-    const requestsTextarea = document.getElementById("specialRequests");
-    if (!requestsTextarea || !chips.length) return;
-
-    chips.forEach(chip => {
-      chip.addEventListener("click", function () {
-        const chipText = this.getAttribute("data-tag") || this.textContent.trim();
-        let currentVal = requestsTextarea.value.trim();
-
-        if (this.classList.contains("active")) {
-          // Remove tag
-          this.classList.remove("active");
-          const regex = new RegExp(`(?:,\\s*)?${chipText}|${chipText}(?:,\\s*)?`, "gi");
-          currentVal = currentVal.replace(regex, "").replace(/^,\s*|,\s*$/g, "").trim();
-        } else {
-          // Add tag
-          this.classList.add("active");
-          if (currentVal.length > 0) {
-            currentVal += `, ${chipText}`;
-          } else {
-            currentVal = chipText;
-          }
-        }
-        requestsTextarea.value = currentVal;
-      });
+  function clearFleetCardHighlights() {
+    const cards = document.querySelectorAll(".fleet-card");
+    cards.forEach(card => {
+      card.classList.remove("fleet-card-selected");
+      const selectBtn = card.querySelector(".btn-select-vehicle");
+      const selectedTag = card.querySelector(".fleet-selected-tag");
+      if (selectBtn) {
+        selectBtn.classList.remove("btn-accent");
+        selectBtn.classList.add("btn-outline");
+        selectBtn.innerHTML = `<span>Select Vehicle</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+      }
+      if (selectedTag) selectedTag.style.display = "none";
     });
   }
 
@@ -131,24 +165,31 @@ const SafeWayBooking = (function () {
    */
   function selectVehicle(vehicleName, scrollIntoView = true) {
     const vehicleSelect = document.getElementById("vehiclePreference");
+    let chosenVal = vehicleName;
+
     if (vehicleSelect) {
       let matched = false;
+      const lowerReq = vehicleName.toLowerCase();
       for (let i = 0; i < vehicleSelect.options.length; i++) {
-        if (vehicleSelect.options[i].text.toLowerCase().includes(vehicleName.toLowerCase()) ||
-            vehicleName.toLowerCase().includes(vehicleSelect.options[i].value.toLowerCase())) {
+        const optText = vehicleSelect.options[i].text.toLowerCase();
+        const optVal = vehicleSelect.options[i].value.toLowerCase();
+        if (optText.includes(lowerReq) || lowerReq.includes(optVal) || optVal.includes(lowerReq)) {
           vehicleSelect.selectedIndex = i;
+          chosenVal = vehicleSelect.options[i].value;
           matched = true;
           break;
         }
       }
-      if (!matched && vehicleSelect.options.length > 0) {
-        // Fallback to closest or default
+      if (!matched && vehicleSelect.options.length > 1) {
         vehicleSelect.selectedIndex = 1;
+        chosenVal = vehicleSelect.options[1].value;
       }
     }
 
+    updateVehicleBannerAndCard(chosenVal);
+
     if (window.SafeWayAnalytics) {
-      window.SafeWayAnalytics.trackEvent("vehicle_selected", { vehicle: vehicleName });
+      window.SafeWayAnalytics.trackEvent("vehicle_selected", { vehicle: chosenVal });
     }
 
     if (scrollIntoView) {

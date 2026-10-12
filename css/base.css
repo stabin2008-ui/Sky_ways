@@ -12,7 +12,7 @@
 html {
   font-size: 16px;
   scroll-behavior: smooth;
-  scroll-padding-top: var(--header-height);
+  scroll-padding-top: calc(var(--header-height) + 12px);
   -webkit-text-size-adjust: 100%;
 }
 
@@ -23,8 +23,13 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
   position: relative;
+  width: 100%;
+  min-height: 100vh;
+}
+
+section[id], main [id] {
+  scroll-margin-top: calc(var(--header-height) + 16px);
 }
 
 /* Accessibility: Skip to Content */

@@ -1,10 +1,11 @@
 /**
- * SafeWay Travels - Responsive Optimization & Mobile Refinements
- * =============================================================
- * Ensures flawless experience on mobile phones, tablets, laptops & desktops.
+ * SafeWay Travels - Responsive Optimization & Mobile-First Refinements
+ * ====================================================================
+ * Precise mobile, tablet, laptop & desktop responsiveness across viewports:
+ * 320x568, 360x800, 375x812, 390x844, 414x896, 768x1024, 1024x768, 1366x768, 1920x1080
  */
 
-/* Safe area inset for modern mobile notches and home indicators */
+/* Safe area insets for notched phones and mobile home indicators */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .mobile-bottom-bar {
     padding-bottom: env(safe-area-inset-bottom);
@@ -12,63 +13,340 @@
   }
 }
 
-/* Base Mobile Rules (Up to 480px) */
-@media (max-width: 480px) {
-  :root {
-    --header-height: 68px;
+/* ==========================================================================
+   GLOBAL RESPONSIVE GUARDS (Prevents horizontal overflow at all screen sizes)
+   ========================================================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  max-width: 100%;
+}
+
+img, svg, video, canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ==========================================================================
+   LARGE DESKTOP (1200px - 1920px+)
+   ========================================================================== */
+@media (min-width: 1200px) {
+  .container {
+    max-width: var(--container-max-width);
+    padding-left: var(--space-8);
+    padding-right: var(--space-8);
   }
 
+  .fleet-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ==========================================================================
+   STANDARD LAPTOP & DESKTOP (992px - 1199px)
+   ========================================================================== */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .nav-menu {
+    gap: var(--space-4);
+  }
+
+  .fleet-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .services-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ==========================================================================
+   TABLET & COMPACT DESKTOP (768px - 991px)
+   ========================================================================== */
+@media (min-width: 768px) and (max-width: 991px) {
   .top-bar {
-    display: none; /* Hide top bar on very small screens to maximize viewport */
+    display: block;
+  }
+
+  .nav-menu {
+    display: none; /* Show mobile hamburger toggle */
+  }
+
+  .mobile-menu-toggle {
+    display: flex;
   }
 
   .hero-section {
-    padding: 2.75rem 0 3.5rem;
+    padding: 3.5rem 0 4.5rem;
   }
 
-  .hero-trust-badge {
-    padding: 6px 12px;
+  .hero-ctas {
+    flex-direction: row;
+    flex-wrap: wrap;
   }
 
-  .hero-trust-text {
-    font-size: 0.775rem;
+  .services-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-6);
+  }
+
+  .fleet-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-6);
+  }
+
+  .pricing-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-5);
+  }
+
+  .testimonials-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-5);
+  }
+
+  .contact-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+  }
+
+  .footer-grid {
+    grid-template-columns: 2fr 1fr 1.2fr;
+    gap: var(--space-6);
+  }
+}
+
+/* ==========================================================================
+   WIDE MOBILE & COMPACT TABLETS (640px - 767px)
+   ========================================================================== */
+@media (max-width: 767px) {
+  :root {
+    --header-height: 68px;
+    --mobile-bar-height: 60px;
+  }
+
+  .top-bar {
+    display: none; /* Hide top bar on mobile to give full screen to user */
+  }
+
+  .mobile-menu-toggle {
+    display: flex;
+  }
+
+  .nav-menu {
+    display: none;
+  }
+
+  .mobile-bottom-bar {
+    display: flex;
+  }
+
+  .footer {
+    padding-bottom: calc(var(--space-10) + var(--mobile-bar-height) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .pricing-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  .testimonials-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  .contact-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+
+  .safety-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 767px) {
+  .services-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .fleet-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .form-row-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .form-row-3 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .hero-ctas {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+/* ==========================================================================
+   MOBILE PHONES (Up to 639px - Includes 360, 375, 390, 414px)
+   ========================================================================== */
+@media (max-width: 639px) {
+  .container {
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+
+  /* Header adjustments */
+  .navbar-inner {
+    gap: 8px;
+  }
+
+  #navBookBtn span {
+    display: none; /* Compact icon-only button to prevent header overlap */
+  }
+
+  #navBookBtn {
+    padding: 0.5rem 0.75rem;
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Hero section adjustments */
+  .hero-section {
+    padding: 2.75rem 0 3.75rem;
   }
 
   .hero-title {
-    font-size: 2rem;
+    font-size: clamp(1.85rem, 6.2vw, 2.5rem);
+    line-height: 1.2;
+    margin-bottom: var(--space-3);
+    word-break: break-word;
+  }
+
+  .hero-subtitle {
+    font-size: 0.95rem;
+    line-height: 1.55;
+    margin-bottom: var(--space-6);
   }
 
   .hero-ctas {
     flex-direction: column;
     width: 100%;
+    gap: 10px;
+    margin-bottom: var(--space-6);
   }
 
   .hero-ctas .btn {
     width: 100%;
+    min-height: 48px;
   }
 
   .hero-meta-points {
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+    gap: 10px;
+    padding-top: var(--space-4);
+  }
+
+  /* Grids collapse to single column */
+  .services-grid,
+  .fleet-grid,
+  .pricing-grid,
+  .testimonials-grid,
+  .why-grid,
+  .about-values-list {
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+  }
+
+  /* Booking form mobile layout */
+  .booking-wrapper {
+    margin: 0;
+    border-radius: var(--radius-lg);
   }
 
   .booking-header-bar {
-    padding: var(--space-5) var(--space-4);
+    padding: var(--space-4);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  .booking-bar-title h3 {
+    font-size: 1.15rem;
   }
 
   .booking-form-inner {
     padding: var(--space-4);
   }
 
-  .contact-card-info, .contact-form-card {
-    padding: var(--space-5);
+  .form-row-2,
+  .form-row-3 {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
   }
 
-  .service-card, .fleet-card, .pricing-card, .testimonial-card {
-    padding: var(--space-5);
+  .form-control {
+    font-size: 16px; /* Prevents auto-zoom in iOS Safari */
+    min-height: 48px;
   }
 
+  .booking-submit-area .btn {
+    width: 100%;
+    min-height: 52px;
+    white-space: normal;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+  }
+
+  .selected-vehicle-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+
+  .selected-vehicle-banner .btn-clear-vehicle {
+    align-self: flex-end;
+  }
+
+  /* Contact and cards */
+  .contact-card-info,
+  .contact-form-card,
+  .service-card,
+  .fleet-card,
+  .pricing-card,
+  .testimonial-card,
+  .why-card {
+    padding: var(--space-5);
+    min-width: 0;
+  }
+
+  .contact-channel-item {
+    padding: 12px;
+    min-width: 0;
+  }
+
+  .channel-val {
+    font-size: 0.95rem;
+    word-break: break-all;
+    overflow-wrap: anywhere;
+  }
+
+  .footer-contact-item a,
+  .footer-contact-item span {
+    word-break: break-all;
+    overflow-wrap: anywhere;
+  }
+
+  /* Modals */
   .modal-card {
     margin: var(--space-2);
     border-radius: var(--radius-lg);
@@ -81,16 +359,120 @@
   .modal-actions {
     gap: var(--space-2);
   }
-}
 
-/* Tablet Optimizations (481px - 768px) */
-@media (min-width: 481px) and (max-width: 768px) {
-  .hero-ctas {
-    flex-direction: row;
+  /* Fleet Lightbox on mobile */
+  .lightbox-card {
+    max-width: 96vw;
+    max-height: 94vh;
+    border-radius: var(--radius-lg);
+  }
+
+  .lightbox-header {
+    padding: 10px 14px;
+  }
+
+  .lightbox-title {
+    font-size: 1.15rem;
+  }
+
+  .lightbox-body {
+    padding: 10px 12px;
+  }
+
+  .lightbox-stage {
+    min-height: 220px;
+    max-height: 42vh;
+  }
+
+  .lightbox-footer {
+    padding: 12px 14px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .lightbox-footer .btn {
+    width: 100%;
+    min-height: 48px;
+    font-size: 0.95rem;
   }
 }
 
-/* Accessibility: Reduced Motion */
+/* ==========================================================================
+   ULTRA-COMPACT PHONES (320px - 380px - iPhone 5/SE 1st gen)
+   ========================================================================== */
+@media (max-width: 380px) {
+  :root {
+    --header-height: 64px;
+  }
+
+  .container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  /* On ultra-narrow screens, hide nav header book button completely
+     because the sticky mobile bottom bar already provides "BOOK A CAB" */
+  #navBookBtn {
+    display: none !important;
+  }
+
+  .logo-icon-wrapper {
+    width: 36px;
+    height: 36px;
+  }
+
+  .logo-icon-wrapper svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .logo-name {
+    font-size: 1.05rem;
+  }
+
+  .logo-tagline {
+    font-size: 0.58rem;
+  }
+
+  .hero-trust-badge {
+    padding: 5px 10px;
+  }
+
+  .hero-trust-text {
+    font-size: 0.72rem;
+  }
+
+  .hero-title {
+    font-size: 1.65rem;
+  }
+
+  .hero-subtitle {
+    font-size: 0.875rem;
+  }
+
+  .special-chip {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+  }
+
+  .bottom-bar-btn span {
+    font-size: 0.68rem;
+  }
+
+  .service-card,
+  .fleet-card,
+  .pricing-card,
+  .testimonial-card,
+  .booking-form-inner,
+  .contact-card-info,
+  .contact-form-card {
+    padding: var(--space-4) 12px;
+  }
+}
+
+/* ==========================================================================
+   ACCESSIBILITY: REDUCED MOTION
+   ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -100,9 +482,17 @@
   }
 }
 
-/* Print Stylesheet */
+/* ==========================================================================
+   PRINT STYLESHEET
+   ========================================================================== */
 @media print {
-  .top-bar, .navbar, .mobile-bottom-bar, .modal-backdrop, .hero-ctas, .btn {
+  .top-bar,
+  .navbar,
+  .mobile-bottom-bar,
+  .modal-backdrop,
+  .lightbox-modal,
+  .hero-ctas,
+  .btn {
     display: none !important;
   }
 
@@ -117,7 +507,8 @@
     padding: 0 !important;
   }
 
-  .hero-title, .hero-subtitle {
+  .hero-title,
+  .hero-subtitle {
     color: #000000 !important;
   }
 }

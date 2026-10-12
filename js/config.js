@@ -103,63 +103,101 @@ const SafeWayConfig = {
   ],
 
   // 3. FLEET DATA STRUCTURE
-  // IMPORTANT: The exact vehicle models and images have not been provided yet.
-  // This structure allows the business owner to add exact vehicle models, photos,
-  // capacities, and descriptions whenever ready.
+  // Exact vehicles available for booking with authentic exterior & interior photos
+  // Vehicle images represent reference fleet models.
   fleet: {
-    sectionNotice: "Fleet details are being updated. Multiple comfortable AC vehicle categories are available on request.",
+    sectionNotice: "Vehicle images for reference. We maintain a versatile fleet of comfortable, sanitized AC vehicles. Representative model photographs shown; exact models confirmed upon inquiry.",
+    referenceNoticeText: "Vehicle images for reference",
     vehicles: [
       {
-        id: "sedan",
-        vehicleName: "Comfort Sedan", // Owner can change to exact model (e.g., Swift Dzire / Etios)
+        id: "toyota_etios",
+        vehicleName: "Toyota Etios",
+        bookingValue: "Toyota Etios — Sedan",
+        category: "Sedan",
         vehicleType: "Sedan (AC)",
         seatingCapacity: "4 Passengers + 1 Driver",
-        luggageCapacity: "2 Medium Bags + Hand Luggage",
+        luggageCapacity: "2 Large Bags + Hand Luggage",
         airConditioning: "Fully Air Conditioned",
-        description: "Ideal for city commutes, business trips, and comfortable airport drops with trunk space.",
-        vehicleImage: "", // Leave empty for polished placeholder, or add image URL e.g. "assets/images/fleet/sedan.jpg"
+        description: "Smooth, comfortable sedan with generous boot space. A trusted choice for airport transfers, corporate visits, and Bengaluru city travel.",
+        exteriorImage: "assets/images/fleet/toyota_etios_exterior.jpg",
+        interiorImage: "assets/images/fleet/toyota_etios_interior.jpg",
+        exteriorAlt: "Toyota Etios sedan exterior view",
+        interiorAlt: "Toyota Etios dashboard and cabin interior view",
         statusText: "Available for Booking",
-        isComingSoon: false,
-        editablePlaceholderTag: "Sedan Category"
+        referenceNotice: "Vehicle image for reference",
+        isComingSoon: false
       },
       {
-        id: "suv",
-        vehicleName: "Spacious Family SUV", // Owner can change to exact model (e.g., Innova / Ertiga)
-        vehicleType: "SUV / MUV (AC)",
+        id: "toyota_innova_crysta",
+        vehicleName: "Toyota Innova Crysta",
+        bookingValue: "Toyota Innova Crysta — MUV",
+        category: "SUV / MUV",
+        vehicleType: "MUV (AC)",
         seatingCapacity: "6 - 7 Passengers + 1 Driver",
-        luggageCapacity: "3-4 Large Bags",
-        airConditioning: "Dual AC Vents",
-        description: "Extra legroom and spacious luggage capacity. Perfect for family outstation travel and group airport transfers.",
-        vehicleImage: "", // Owner can add photo
+        luggageCapacity: "4 Large Bags + Hand Luggage",
+        airConditioning: "Dual AC Vents (Front & Rear)",
+        description: "The gold standard for highway road trips and family comfort. Exceptional cabin legroom, plush reclining seats, and dependable highway performance.",
+        exteriorImage: "assets/images/fleet/toyota_innova_crysta_exterior.jpg",
+        interiorImage: "assets/images/fleet/toyota_innova_crysta_interior.jpg",
+        exteriorAlt: "Toyota Innova Crysta MUV exterior view",
+        interiorAlt: "Toyota Innova Crysta premium interior cabin view",
         statusText: "Available for Booking",
-        isComingSoon: false,
-        editablePlaceholderTag: "SUV Category"
+        referenceNotice: "Vehicle image for reference",
+        isComingSoon: false
       },
       {
-        id: "hatchback",
-        vehicleName: "Compact City Cab", // Owner can change to exact model (e.g., WagonR / Tiago)
-        vehicleType: "Hatchback (AC)",
-        seatingCapacity: "3 - 4 Passengers + 1 Driver",
-        luggageCapacity: "1-2 Bags",
-        airConditioning: "Fully Air Conditioned",
-        description: "Quick, economical travel for city errands, daily office visits, and light luggage travel in Bengaluru.",
-        vehicleImage: "", // Owner can add photo
+        id: "maruti_suzuki_ertiga",
+        vehicleName: "Maruti Suzuki Ertiga",
+        bookingValue: "Maruti Suzuki Ertiga — MUV",
+        category: "SUV / MUV",
+        vehicleType: "MUV (AC)",
+        seatingCapacity: "6 Passengers + 1 Driver",
+        luggageCapacity: "2 - 3 Medium Bags + Hand Luggage",
+        airConditioning: "Dual AC with Roof Blowers",
+        description: "Versatile, economical 6-seater MUV with flexible seating. Outstanding city agility and comfort for family airport drops and weekend outstation trips.",
+        exteriorImage: "assets/images/fleet/maruti_suzuki_ertiga_exterior.jpg",
+        interiorImage: "assets/images/fleet/maruti_suzuki_ertiga_interior.jpg",
+        exteriorAlt: "Maruti Suzuki Ertiga MUV exterior view",
+        interiorAlt: "Maruti Suzuki Ertiga cabin interior view",
         statusText: "Available for Booking",
-        isComingSoon: false,
-        editablePlaceholderTag: "Hatchback Category"
+        referenceNotice: "Vehicle image for reference",
+        isComingSoon: false
       },
       {
-        id: "custom",
-        vehicleName: "Custom Group Vehicle",
-        vehicleType: "Tempo / Premium (AC)",
-        seatingCapacity: "Arranged on Request",
-        luggageCapacity: "Custom Luggage Space",
-        airConditioning: "Fully Air Conditioned",
-        description: "Traveling with a larger group or specific vehicle requirement? Request custom vehicle arrangements directly.",
-        vehicleImage: "",
-        statusText: "On Request",
-        isComingSoon: false,
-        editablePlaceholderTag: "Custom Travel"
+        id: "toyota_rumion",
+        vehicleName: "Toyota Rumion",
+        bookingValue: "Toyota Rumion — MUV",
+        category: "SUV / MUV",
+        vehicleType: "MUV (AC)",
+        seatingCapacity: "6 Passengers + 1 Driver",
+        luggageCapacity: "2 - 3 Medium Bags + Hand Luggage",
+        airConditioning: "Automatic Climate Control & Rear AC",
+        description: "Modern, refined 6-seater family MUV engineered with proven Toyota comfort. Features smooth suspension, comfortable 3-row seating, and quiet cabin.",
+        exteriorImage: "assets/images/fleet/toyota_rumion_exterior.jpg",
+        interiorImage: "assets/images/fleet/toyota_rumion_interior.png",
+        exteriorAlt: "Toyota Rumion MUV exterior view",
+        interiorAlt: "Toyota Rumion cabin interior view",
+        statusText: "Available for Booking",
+        referenceNotice: "Vehicle image for reference",
+        isComingSoon: false
+      },
+      {
+        id: "toyota_innova_hycross",
+        vehicleName: "Toyota Innova Hycross",
+        bookingValue: "Toyota Innova Hycross — MUV",
+        category: "SUV / MUV",
+        vehicleType: "MUV (AC)",
+        seatingCapacity: "6 - 7 Passengers + 1 Driver",
+        luggageCapacity: "4 Large Bags + Hand Luggage",
+        airConditioning: "Multi-Zone Automatic Climate Control",
+        description: "Latest-generation premium vehicle delivering ultra-smooth ride quality, whisper-quiet cabin acoustics, expansive legroom, and first-class comfort.",
+        exteriorImage: "assets/images/fleet/toyota_innova_hycross_exterior.jpg",
+        interiorImage: "assets/images/fleet/toyota_innova_hycross_interior.jpg",
+        exteriorAlt: "Toyota Innova Hycross modern premium MUV exterior view",
+        interiorAlt: "Toyota Innova Hycross luxury cabin interior view",
+        statusText: "Available for Booking",
+        referenceNotice: "Vehicle image for reference",
+        isComingSoon: false
       }
     ]
   },

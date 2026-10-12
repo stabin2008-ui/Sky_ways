@@ -23,6 +23,8 @@
   transition: all var(--transition-normal);
   white-space: nowrap;
   user-select: none;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .btn:active {
@@ -45,6 +47,8 @@
 
 .btn-block {
   width: 100%;
+  white-space: normal;
+  text-align: center;
 }
 
 /* Primary Button (Deep Midnight Navy) */

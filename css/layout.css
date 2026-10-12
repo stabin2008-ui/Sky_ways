@@ -74,13 +74,15 @@
 .brand-logo {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   text-decoration: none;
+  min-width: 0;
+  flex-shrink: 1;
 }
 
 .logo-icon-wrapper {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
   border-radius: var(--radius-md);
   display: flex;
@@ -89,20 +91,23 @@
   box-shadow: 0 4px 10px rgba(11, 25, 44, 0.2);
   color: #FFFFFF;
   border: 1px solid rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
 }
 
 .logo-text-group {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .logo-name {
   font-family: var(--font-heading);
-  font-size: 1.35rem;
+  font-size: clamp(1.05rem, 3.8vw, 1.35rem);
   font-weight: 800;
   color: var(--color-primary);
-  line-height: 1.1;
+  line-height: 1.15;
   letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 
 .logo-name span {
@@ -110,11 +115,12 @@
 }
 
 .logo-tagline {
-  font-size: 0.72rem;
+  font-size: clamp(0.58rem, 1.9vw, 0.72rem);
   font-weight: 600;
   color: var(--color-text-subtle);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 /* Nav Menu Links (Desktop) */
@@ -163,7 +169,12 @@
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+#navBookBtn {
+  min-height: 44px;
 }
 
 .mobile-menu-toggle {
