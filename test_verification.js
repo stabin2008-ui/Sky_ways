@@ -21,7 +21,7 @@ const requiredFiles = [
   'js/app.js',
   'assets/images/bengaluru_travel_hero.jpg',
   'assets/images/driver_placeholder.svg',
-  // All 10 Authentic Fleet Images
+  // All 12 Authentic Fleet Images
   'assets/images/fleet/toyota_etios_exterior.jpg',
   'assets/images/fleet/toyota_etios_interior.jpg',
   'assets/images/fleet/toyota_innova_crysta_exterior.jpg',
@@ -31,7 +31,9 @@ const requiredFiles = [
   'assets/images/fleet/toyota_rumion_exterior.jpg',
   'assets/images/fleet/toyota_rumion_interior.png',
   'assets/images/fleet/toyota_innova_hycross_exterior.jpg',
-  'assets/images/fleet/toyota_innova_hycross_interior.jpg'
+  'assets/images/fleet/toyota_innova_hycross_interior.jpg',
+  'assets/images/fleet/tempo_traveller_exterior.jpg',
+  'assets/images/fleet/tempo_traveller_interior.jpg'
 ];
 
 let allFilesOk = true;
@@ -60,6 +62,7 @@ console.log('  Phone:', cfg.business.phoneRaw);
 console.log('  Email:', cfg.business.email);
 console.log('  Tagline:', cfg.business.tagline);
 console.log('  Services count:', cfg.services.length);
+console.log('  Fleet categories count:', cfg.fleet.categories.length);
 console.log('  Fleet vehicles count:', cfg.fleet.vehicles.length);
 console.log('  Pricing categories:', cfg.pricing.categories.length);
 console.log('  Testimonials count:', cfg.testimonials.reviews.length);
@@ -68,17 +71,24 @@ if (cfg.business.phoneRaw !== '9980838845') throw new Error('Phone mismatch');
 if (cfg.business.email !== 'ways63098@gmail.com') throw new Error('Email mismatch');
 if (cfg.business.yearsOfExperience !== 25) throw new Error('Experience mismatch');
 
+// Verify 4 categories
+if (!cfg.fleet.categories || cfg.fleet.categories.length !== 4) {
+  throw new Error('Expected 4 fleet categories, got: ' + (cfg.fleet.categories ? cfg.fleet.categories.length : 0));
+}
+console.log('  [OK] 4 Categories verified in config.');
+
 // Verify exact fleet vehicles in config
 const expectedVehicleModels = [
   'Toyota Etios',
   'Toyota Innova Crysta',
   'Maruti Suzuki Ertiga',
   'Toyota Rumion',
-  'Toyota Innova Hycross'
+  'Toyota Innova Hycross',
+  'Custom Group Vehicle (Tempo Traveller)'
 ];
 
 for (const model of expectedVehicleModels) {
-  const found = cfg.fleet.vehicles.find(v => v.vehicleName === model);
+  const found = cfg.fleet.vehicles.find(v => v.vehicleName === model || v.vehicleName.includes(model));
   if (!found) throw new Error('Missing expected fleet vehicle model: ' + model);
   if (!found.exteriorImage || !fs.existsSync(found.exteriorImage)) {
     throw new Error('Missing exterior image for vehicle: ' + model);

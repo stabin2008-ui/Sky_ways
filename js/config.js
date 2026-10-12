@@ -103,11 +103,174 @@ const SafeWayConfig = {
   ],
 
   // 3. FLEET DATA STRUCTURE
-  // Exact vehicles available for booking with authentic exterior & interior photos
-  // Vehicle images represent reference fleet models.
+  // 4 Premium Vehicle Categories matching the reference design layout:
+  // 1. Sedan Category — Toyota Etios
+  // 2. SUV Category — Four models (Innova Crysta, Ertiga, Rumion, Innova Hycross)
+  // 3. Compact City Cab — Two selectable options (Etios Sedan, Ertiga SUV)
+  // 4. Custom Group Vehicle — Traveller (Tempo Traveller)
   fleet: {
     sectionNotice: "Vehicle images for reference. We maintain a versatile fleet of comfortable, sanitized AC vehicles. Representative model photographs shown; exact models confirmed upon inquiry.",
     referenceNoticeText: "Vehicle images for reference",
+    categories: [
+      {
+        id: "sedan_category",
+        categoryPill: "SEDAN CATEGORY",
+        categoryLabel: "SEDAN (AC)",
+        vehicleName: "Toyota Etios",
+        bookingValue: "Toyota Etios — Sedan",
+        availability: "available",
+        availabilityText: "Available for Booking",
+        description: "Ideal for city commutes, business trips, and comfortable airport drops with trunk space.",
+        exteriorImage: "assets/images/fleet/toyota_etios_exterior.jpg",
+        interiorImage: "assets/images/fleet/toyota_etios_interior.jpg",
+        exteriorAlt: "Toyota Etios sedan exterior photograph",
+        interiorAlt: "Toyota Etios interior dashboard and seating layout",
+        features: [
+          { icon: "users", text: "4 Passengers + Driver" },
+          { icon: "briefcase", text: "Generous Trunk (2-3 Bags)" },
+          { icon: "wind", text: "Full Cabin Air Conditioning" }
+        ],
+        hasModelSelector: false
+      },
+      {
+        id: "suv_category",
+        categoryPill: "SUV / MUV CATEGORY",
+        categoryLabel: "SUV / MUV (AC)",
+        defaultModelId: "toyota_innova_crysta",
+        availability: "available",
+        availabilityText: "Available for Booking",
+        description: "Spacious multi-utility vehicle built for family outings, airport runs with extra luggage, and long highway journeys.",
+        hasModelSelector: true,
+        selectorLabel: "Choose SUV Model:",
+        models: [
+          {
+            id: "toyota_innova_crysta",
+            name: "Toyota Innova Crysta",
+            tabLabel: "Innova Crysta",
+            bookingValue: "Toyota Innova Crysta — MUV",
+            exteriorImage: "assets/images/fleet/toyota_innova_crysta_exterior.jpg",
+            interiorImage: "assets/images/fleet/toyota_innova_crysta_interior.jpg",
+            exteriorAlt: "Toyota Innova Crysta MUV exterior view",
+            interiorAlt: "Toyota Innova Crysta interior cabin and seats",
+            features: [
+              { icon: "users", text: "6 - 7 Passengers + Driver" },
+              { icon: "briefcase", text: "4 Large Bags + Hand Luggage" },
+              { icon: "wind", text: "Dual AC Front & Rear Vents" }
+            ]
+          },
+          {
+            id: "maruti_suzuki_ertiga",
+            name: "Maruti Suzuki Ertiga",
+            tabLabel: "Ertiga",
+            bookingValue: "Maruti Suzuki Ertiga — MUV",
+            exteriorImage: "assets/images/fleet/maruti_suzuki_ertiga_exterior.jpg",
+            interiorImage: "assets/images/fleet/maruti_suzuki_ertiga_interior.jpg",
+            exteriorAlt: "Maruti Suzuki Ertiga MUV exterior view",
+            interiorAlt: "Maruti Suzuki Ertiga interior cabin view",
+            features: [
+              { icon: "users", text: "6 Passengers + Driver" },
+              { icon: "briefcase", text: "2 - 3 Medium Bags" },
+              { icon: "wind", text: "Dual AC with Roof Blowers" }
+            ]
+          },
+          {
+            id: "toyota_rumion",
+            name: "Toyota Rumion",
+            tabLabel: "Rumion",
+            bookingValue: "Toyota Rumion — MUV",
+            exteriorImage: "assets/images/fleet/toyota_rumion_exterior.jpg",
+            interiorImage: "assets/images/fleet/toyota_rumion_interior.png",
+            exteriorAlt: "Toyota Rumion MUV exterior view",
+            interiorAlt: "Toyota Rumion interior cabin view",
+            features: [
+              { icon: "users", text: "6 Passengers + Driver" },
+              { icon: "briefcase", text: "2 - 3 Medium Bags" },
+              { icon: "wind", text: "Automatic Climate Control AC" }
+            ]
+          },
+          {
+            id: "toyota_innova_hycross",
+            name: "Toyota Innova Hycross",
+            tabLabel: "Innova Hycross",
+            bookingValue: "Toyota Innova Hycross — MUV",
+            exteriorImage: "assets/images/fleet/toyota_innova_hycross_exterior.jpg",
+            interiorImage: "assets/images/fleet/toyota_innova_hycross_interior.jpg",
+            exteriorAlt: "Toyota Innova Hycross premium exterior view",
+            interiorAlt: "Toyota Innova Hycross luxury cabin view",
+            features: [
+              { icon: "users", text: "6 - 7 Passengers + Driver" },
+              { icon: "briefcase", text: "4 Large Bags + Hand Luggage" },
+              { icon: "wind", text: "Multi-Zone Automatic AC" }
+            ]
+          }
+        ]
+      },
+      {
+        id: "compact_category",
+        categoryPill: "COMPACT CITY CAB",
+        categoryLabel: "COMPACT / HATCH & SEDAN (AC)",
+        defaultModelId: "compact_etios",
+        availability: "available",
+        availabilityText: "Available for Booking",
+        description: "Affordable and nimble for quick city rides, daily commutes, and hassle-free traffic navigation.",
+        hasModelSelector: true,
+        selectorLabel: "Choose Option:",
+        models: [
+          {
+            id: "compact_etios",
+            name: "Toyota Etios (Sedan)",
+            tabLabel: "Etios (Sedan)",
+            bookingValue: "Toyota Etios — Sedan",
+            exteriorImage: "assets/images/fleet/toyota_etios_exterior.jpg",
+            interiorImage: "assets/images/fleet/toyota_etios_interior.jpg",
+            exteriorAlt: "Toyota Etios sedan exterior view",
+            interiorAlt: "Toyota Etios dashboard and seating view",
+            features: [
+              { icon: "users", text: "4 Passengers + Driver" },
+              { icon: "briefcase", text: "Trunk Space for 2-3 Bags" },
+              { icon: "wind", text: "Air Conditioned Cabin" }
+            ]
+          },
+          {
+            id: "compact_ertiga",
+            name: "Maruti Suzuki Ertiga (SUV)",
+            tabLabel: "Ertiga (SUV)",
+            bookingValue: "Maruti Suzuki Ertiga — MUV",
+            exteriorImage: "assets/images/fleet/maruti_suzuki_ertiga_exterior.jpg",
+            interiorImage: "assets/images/fleet/maruti_suzuki_ertiga_interior.jpg",
+            exteriorAlt: "Maruti Suzuki Ertiga exterior view",
+            interiorAlt: "Maruti Suzuki Ertiga cabin interior view",
+            features: [
+              { icon: "users", text: "6 Passengers + Driver" },
+              { icon: "briefcase", text: "Flexible Luggage Space" },
+              { icon: "wind", text: "Dual Roof AC Blowers" }
+            ]
+          }
+        ]
+      },
+      {
+        id: "traveller_category",
+        categoryPill: "CUSTOM GROUP TRAVEL",
+        categoryLabel: "TEMPO / PREMIUM (AC)",
+        vehicleName: "Custom Group Vehicle",
+        bookingValue: "Custom Group Vehicle (Tempo Traveller)",
+        availability: "on_request",
+        availabilityText: "On Request",
+        description: "Traveling with a larger group or specific vehicle requirement? Request custom vehicle arrangements directly.",
+        exteriorImage: "assets/images/fleet/tempo_traveller_exterior.jpg",
+        interiorImage: "assets/images/fleet/tempo_traveller_interior.jpg",
+        exteriorAlt: "Tempo Traveller exterior view",
+        interiorAlt: "Tempo Traveller passenger cabin seating layout",
+        features: [
+          { icon: "users", text: "Group Seating (On Request)" },
+          { icon: "briefcase", text: "Expansive Luggage Capacity" },
+          { icon: "wind", text: "High-Capacity Air Conditioning" }
+        ],
+        hasModelSelector: false
+      }
+    ],
+
+    // Preserved flat vehicle array for direct lookups and full compatibility
     vehicles: [
       {
         id: "toyota_etios",
@@ -196,6 +359,24 @@ const SafeWayConfig = {
         exteriorAlt: "Toyota Innova Hycross modern premium MUV exterior view",
         interiorAlt: "Toyota Innova Hycross luxury cabin interior view",
         statusText: "Available for Booking",
+        referenceNotice: "Vehicle image for reference",
+        isComingSoon: false
+      },
+      {
+        id: "tempo_traveller",
+        vehicleName: "Custom Group Vehicle (Tempo Traveller)",
+        bookingValue: "Custom Group Vehicle (Tempo Traveller)",
+        category: "Tempo / Premium",
+        vehicleType: "Tempo / Premium (AC)",
+        seatingCapacity: "Group Travel On Request",
+        luggageCapacity: "Expansive Group Luggage Space",
+        airConditioning: "High-Capacity Air Conditioning",
+        description: "Spacious tempo traveller for large family travel, pilgrim tours, corporate groups, and wedding travel across South India.",
+        exteriorImage: "assets/images/fleet/tempo_traveller_exterior.jpg",
+        interiorImage: "assets/images/fleet/tempo_traveller_interior.jpg",
+        exteriorAlt: "Tempo Traveller exterior view",
+        interiorAlt: "Tempo Traveller passenger cabin seating layout",
+        statusText: "On Request",
         referenceNotice: "Vehicle image for reference",
         isComingSoon: false
       }

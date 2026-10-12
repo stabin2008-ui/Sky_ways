@@ -85,52 +85,42 @@ const SafeWayBooking = (function () {
   }
 
   function highlightFleetCard(vehicleName) {
-    const cards = document.querySelectorAll(".fleet-card");
+    const cards = document.querySelectorAll(".category-card, .fleet-card");
     const cleanQuery = vehicleName.toLowerCase();
 
     cards.forEach(card => {
       const cardBookingVal = (card.getAttribute("data-booking-value") || "").toLowerCase();
-      const cardVehicleName = (card.getAttribute("data-vehicle-name") || "").toLowerCase();
-      const cardId = card.getAttribute("data-vehicle-id");
+      const cardVehicleId = (card.getAttribute("data-active-vehicle-id") || "").toLowerCase();
       const isMatch = cardBookingVal.includes(cleanQuery) ||
                       cleanQuery.includes(cardBookingVal) ||
-                      cleanQuery.includes(cardVehicleName);
+                      cleanQuery.includes(cardVehicleId);
 
-      const selectBtn = card.querySelector(".btn-select-vehicle");
-      const selectedTag = card.querySelector(".fleet-selected-tag");
-
+      const btn = card.querySelector(".btn-card-select-vehicle, .btn-select-vehicle");
       if (isMatch) {
-        card.classList.add("fleet-card-selected");
-        if (selectBtn) {
-          selectBtn.classList.remove("btn-outline");
-          selectBtn.classList.add("btn-accent");
-          selectBtn.innerHTML = `<span>Selected ✓</span>`;
+        card.classList.add("card-selected", "fleet-card-selected");
+        if (btn) {
+          btn.classList.add("btn-selected-active");
+          btn.innerHTML = `<span>Selected ✓</span>`;
         }
-        if (selectedTag) selectedTag.style.display = "inline-flex";
       } else {
-        card.classList.remove("fleet-card-selected");
-        if (selectBtn) {
-          selectBtn.classList.remove("btn-accent");
-          selectBtn.classList.add("btn-outline");
-          selectBtn.innerHTML = `<span>Select Vehicle</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+        card.classList.remove("card-selected", "fleet-card-selected");
+        if (btn) {
+          btn.classList.remove("btn-selected-active");
+          btn.innerHTML = `<span>Select Vehicle</span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
         }
-        if (selectedTag) selectedTag.style.display = "none";
       }
     });
   }
 
   function clearFleetCardHighlights() {
-    const cards = document.querySelectorAll(".fleet-card");
+    const cards = document.querySelectorAll(".category-card, .fleet-card");
     cards.forEach(card => {
-      card.classList.remove("fleet-card-selected");
-      const selectBtn = card.querySelector(".btn-select-vehicle");
-      const selectedTag = card.querySelector(".fleet-selected-tag");
-      if (selectBtn) {
-        selectBtn.classList.remove("btn-accent");
-        selectBtn.classList.add("btn-outline");
-        selectBtn.innerHTML = `<span>Select Vehicle</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+      card.classList.remove("card-selected", "fleet-card-selected");
+      const btn = card.querySelector(".btn-card-select-vehicle, .btn-select-vehicle");
+      if (btn) {
+        btn.classList.remove("btn-selected-active");
+        btn.innerHTML = `<span>Select Vehicle</span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
       }
-      if (selectedTag) selectedTag.style.display = "none";
     });
   }
 

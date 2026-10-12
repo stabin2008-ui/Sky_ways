@@ -158,161 +158,261 @@ const SafeWayUI = (function () {
   }
 
   /**
-   * Renders Fleet Cards dynamically from central config
-   * Supports exterior/interior toggle, lightbox viewer, and booking integration
+   * Helper to return clean SVG feature icons
+   */
+  function getFeatureIconSvg(iconName) {
+    if (iconName === "users") {
+      return `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`;
+    } else if (iconName === "briefcase") {
+      return `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>`;
+    } else {
+      return `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"></path></svg>`;
+    }
+  }
+
+  /**
+   * Renders the 4 Premium Vehicle Category Cards matching reference design:
+   * 1. Sedan Category — Toyota Etios
+   * 2. SUV Category — Four models with interactive switcher (Crysta, Ertiga, Rumion, Hycross)
+   * 3. Compact City Cab — Two selectable options (Etios Sedan, Ertiga SUV)
+   * 4. Custom Group Vehicle — Traveller (Tempo Traveller)
    */
   function renderFleetCards() {
     const container = document.getElementById("fleetContainer");
-    if (!container || !window.SafeWayConfig?.fleet?.vehicles) return;
+    if (!container || !window.SafeWayConfig?.fleet) return;
 
-    const vehicles = window.SafeWayConfig.fleet.vehicles;
+    const categories = window.SafeWayConfig.fleet.categories;
+    if (!categories || !categories.length) return;
 
-    container.innerHTML = vehicles.map((v, index) => `
-      <div class="fleet-card" id="fleetCard-${v.id}" data-vehicle-id="${v.id}" data-booking-value="${escapeHtml(v.bookingValue || v.vehicleName)}" data-vehicle-name="${escapeHtml(v.vehicleName)}">
-        <div class="fleet-media">
-          <div class="fleet-img-container" data-vehicle-id="${v.id}">
-            <img src="${escapeHtml(v.exteriorImage)}" 
-                 alt="${escapeHtml(v.exteriorAlt)}" 
-                 class="fleet-img" 
-                 id="fleetImg-${v.id}" 
+    container.innerHTML = categories.map(cat => {
+      let initialModel = null;
+      let exteriorImg = cat.exteriorImage;
+      let interiorImg = cat.interiorImage;
+      let exteriorAlt = cat.exteriorAlt;
+      let interiorAlt = cat.interiorAlt;
+      let displayName = cat.vehicleName;
+      let bookingVal = cat.bookingValue;
+      let featuresList = cat.features || [];
+      let currentVehicleId = cat.id === "sedan_category" ? "toyota_etios" : (cat.id === "traveller_category" ? "tempo_traveller" : "");
+
+      if (cat.hasModelSelector && cat.models && cat.models.length) {
+        initialModel = cat.models.find(m => m.id === cat.defaultModelId) || cat.models[0];
+        exteriorImg = initialModel.exteriorImage;
+        interiorImg = initialModel.interiorImage;
+        exteriorAlt = initialModel.exteriorAlt;
+        interiorAlt = initialModel.interiorAlt;
+        displayName = initialModel.name;
+        bookingVal = initialModel.bookingValue;
+        featuresList = initialModel.features || [];
+        currentVehicleId = initialModel.id.replace("compact_", "");
+      }
+
+      // Model selector HTML for SUV and Compact City Cab
+      let modelSelectorHtml = "";
+      if (cat.hasModelSelector && cat.models && cat.models.length) {
+        modelSelectorHtml = `
+          <div class="card-model-selector-wrap">
+            <span class="selector-label">${escapeHtml(cat.selectorLabel || "Select Model:")}</span>
+            <div class="card-model-pills" role="tablist" aria-label="${escapeHtml(cat.categoryPill)} models">
+              ${cat.models.map(m => `
+                <button type="button" 
+                        class="model-pill ${m.id === initialModel.id ? 'active' : ''}" 
+                        data-category-id="${cat.id}" 
+                        data-model-id="${m.id}" 
+                        role="tab" 
+                        aria-selected="${m.id === initialModel.id ? 'true' : 'false'}">
+                  ${escapeHtml(m.tabLabel || m.name)}
+                </button>
+              `).join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      // Feature panel HTML
+      const featuresHtml = featuresList.map(f => `
+        <div class="feature-item">
+          <span class="feature-icon" aria-hidden="true">${getFeatureIconSvg(f.icon)}</span>
+          <span class="feature-text">${escapeHtml(f.text)}</span>
+        </div>
+      `).join("");
+
+      return `
+        <div class="category-card" id="categoryCard-${cat.id}" data-category-id="${cat.id}" data-active-vehicle-id="${currentVehicleId}" data-booking-value="${escapeHtml(bookingVal)}">
+          <!-- 1. Rounded Category Label at Top -->
+          <div class="card-top-pill">${escapeHtml(cat.categoryPill)}</div>
+
+          <!-- 2. Large Exterior Photograph -->
+          <div class="card-img-block card-img-exterior" data-category-id="${cat.id}" data-view="exterior" title="Click to enlarge exterior photo">
+            <img src="${escapeHtml(exteriorImg)}" 
+                 alt="${escapeHtml(exteriorAlt)}" 
+                 class="category-img" 
+                 id="catImgExt-${cat.id}" 
                  loading="lazy" 
                  width="600" 
                  height="375">
+            <span class="img-view-badge">Exterior View</span>
+            <span class="img-zoom-btn" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+            </span>
           </div>
 
-          <!-- Exterior / Interior View Switcher -->
-          <div class="fleet-view-toggles" role="tablist" aria-label="${escapeHtml(v.vehicleName)} photo views">
-            <button type="button" class="view-toggle-pill active" data-vehicle-id="${v.id}" data-view="exterior" role="tab" aria-selected="true" aria-controls="fleetImg-${v.id}">
-              Exterior
-            </button>
-            <button type="button" class="view-toggle-pill" data-vehicle-id="${v.id}" data-view="interior" role="tab" aria-selected="false" aria-controls="fleetImg-${v.id}">
-              Interior
-            </button>
+          <!-- 3. Interior Photograph Immediately Underneath -->
+          <div class="card-img-block card-img-interior" data-category-id="${cat.id}" data-view="interior" title="Click to enlarge interior photo">
+            <img src="${escapeHtml(interiorImg)}" 
+                 alt="${escapeHtml(interiorAlt)}" 
+                 class="category-img" 
+                 id="catImgInt-${cat.id}" 
+                 loading="lazy" 
+                 width="600" 
+                 height="375">
+            <span class="img-view-badge">Interior &amp; Cabin View</span>
+            <span class="img-zoom-btn" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+            </span>
           </div>
 
-          <!-- Reference Notice Pill -->
-          <div class="fleet-ref-badge" title="Representative vehicle image for reference">
-            <span>Reference Photo</span>
-          </div>
-
-          <!-- Click to Enlarge / Lightbox Trigger -->
-          <button type="button" class="fleet-zoom-trigger" data-vehicle-id="${v.id}" aria-label="Enlarge ${escapeHtml(v.vehicleName)} photo in lightbox">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
-              <polyline points="15 3 21 3 21 9"></polyline>
-              <polyline points="9 21 3 21 3 15"></polyline>
-              <line x1="21" y1="3" x2="14" y2="10"></line>
-              <line x1="3" y1="21" x2="10" y2="14"></line>
-            </svg>
-            <span>Enlarge</span>
-          </button>
-        </div>
-
-        <div class="fleet-body">
-          <div class="fleet-header-row">
-            <span class="fleet-type-tag">${escapeHtml(v.category)}</span>
-            <span class="fleet-selected-tag" style="display: none;">Selected ✓</span>
-          </div>
-          <h3 class="fleet-name">${escapeHtml(v.vehicleName)}</h3>
-          <p class="fleet-desc">${escapeHtml(v.description)}</p>
-
-          <div class="fleet-specs-grid">
-            <div class="spec-item" title="Seating Capacity">
-              <span class="spec-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-              </span>
-              <span class="spec-val">${escapeHtml(v.seatingCapacity)}</span>
+          <div class="card-content-area">
+            <!-- 4. Availability Badge with small dot -->
+            <div class="card-availability-badge ${cat.availability === 'available' ? 'badge-available' : 'badge-on-request'}">
+              <span class="avail-dot"></span>
+              <span>${escapeHtml(cat.availabilityText)}</span>
             </div>
-            <div class="spec-item" title="Luggage Space">
-              <span class="spec-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
-              </span>
-              <span class="spec-val">${escapeHtml(v.luggageCapacity)}</span>
-            </div>
-            <div class="spec-item" title="Air Conditioning">
-              <span class="spec-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-              </span>
-              <span class="spec-val">${escapeHtml(v.airConditioning)}</span>
-            </div>
-          </div>
 
-          <div class="fleet-card-actions">
-            <button type="button" class="btn btn-accent btn-block btn-select-vehicle" data-vehicle-name="${escapeHtml(v.bookingValue || v.vehicleName)}" data-vehicle-id="${v.id}">
+            <!-- 5. Orange Vehicle Category Label -->
+            <div class="card-orange-label">${escapeHtml(cat.categoryLabel)}</div>
+
+            <!-- 6. Bold Navy Vehicle Name -->
+            <h3 class="card-navy-title" id="catTitle-${cat.id}">${escapeHtml(displayName)}</h3>
+
+            <!-- 7. Short Descriptive Paragraph -->
+            <p class="card-desc">${escapeHtml(cat.description)}</p>
+
+            <!-- 8. Light-Grey Feature Panel with Navy Icons -->
+            <div class="card-feature-panel" id="catFeatures-${cat.id}">
+              ${featuresHtml}
+            </div>
+
+            <!-- 9. Model list / selector when applicable -->
+            ${modelSelectorHtml}
+
+            <!-- 10. Full-width Outlined Select Vehicle Button with Right Arrow -->
+            <button type="button" 
+                    class="btn-card-select-vehicle" 
+                    id="catSelectBtn-${cat.id}" 
+                    data-category-id="${cat.id}" 
+                    data-booking-value="${escapeHtml(bookingVal)}" 
+                    data-vehicle-name="${escapeHtml(displayName)}"
+                    aria-label="Select ${escapeHtml(displayName)} for booking">
               <span>Select Vehicle</span>
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-            </button>
-            <button type="button" class="btn btn-outline btn-block btn-view-gallery" data-vehicle-id="${v.id}">
-              <span>View Photos (Exterior &amp; Cabin)</span>
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
             </button>
           </div>
         </div>
-      </div>
-    `).join("");
+      `;
+    }).join("");
 
-    // Bind Exterior / Interior view switcher buttons on cards
-    container.querySelectorAll(".view-toggle-pill").forEach(btn => {
-      btn.addEventListener("click", function (e) {
+    // Bind Model Switcher Pills (SUV models & Compact City Cab options)
+    container.querySelectorAll(".model-pill").forEach(pill => {
+      pill.addEventListener("click", function (e) {
         e.stopPropagation();
-        const vId = this.getAttribute("data-vehicle-id");
-        const targetView = this.getAttribute("data-view");
-        const card = document.getElementById(`fleetCard-${vId}`);
-        const img = document.getElementById(`fleetImg-${vId}`);
-        const vehicle = vehicles.find(item => item.id === vId);
+        const catId = this.getAttribute("data-category-id");
+        const modelId = this.getAttribute("data-model-id");
+        const card = document.getElementById(`categoryCard-${catId}`);
+        const categoryData = categories.find(c => c.id === catId);
+        if (!card || !categoryData || !categoryData.models) return;
 
-        if (!card || !img || !vehicle) return;
+        const model = categoryData.models.find(m => m.id === modelId);
+        if (!model) return;
 
-        // Update pills active state
-        card.querySelectorAll(".view-toggle-pill").forEach(pill => {
-          const isTarget = pill === this;
-          pill.classList.toggle("active", isTarget);
-          pill.setAttribute("aria-selected", isTarget ? "true" : "false");
+        // Update active tab styles
+        card.querySelectorAll(".model-pill").forEach(p => {
+          const isTarget = p === this;
+          p.classList.toggle("active", isTarget);
+          p.setAttribute("aria-selected", isTarget ? "true" : "false");
         });
 
-        // Smooth image switch
-        img.style.opacity = "0.4";
-        setTimeout(() => {
-          if (targetView === "interior") {
-            img.src = vehicle.interiorImage;
-            img.alt = vehicle.interiorAlt;
-          } else {
-            img.src = vehicle.exteriorImage;
-            img.alt = vehicle.exteriorAlt;
-          }
-          img.style.opacity = "1";
-        }, 120);
+        // Update active vehicle ID for Lightbox
+        const cleanVehId = model.id.replace("compact_", "");
+        card.setAttribute("data-active-vehicle-id", cleanVehId);
+        card.setAttribute("data-booking-value", model.bookingValue);
+
+        // Smooth image transitions
+        const extImg = document.getElementById(`catImgExt-${catId}`);
+        const intImg = document.getElementById(`catImgInt-${catId}`);
+        const titleEl = document.getElementById(`catTitle-${catId}`);
+        const featEl = document.getElementById(`catFeatures-${catId}`);
+        const selectBtn = document.getElementById(`catSelectBtn-${catId}`);
+
+        if (extImg) {
+          extImg.style.opacity = "0.3";
+          setTimeout(() => {
+            extImg.src = model.exteriorImage;
+            extImg.alt = model.exteriorAlt;
+            extImg.style.opacity = "1";
+          }, 120);
+        }
+
+        if (intImg) {
+          intImg.style.opacity = "0.3";
+          setTimeout(() => {
+            intImg.src = model.interiorImage;
+            intImg.alt = model.interiorAlt;
+            intImg.style.opacity = "1";
+          }, 120);
+        }
+
+        if (titleEl) {
+          titleEl.textContent = model.name;
+        }
+
+        if (featEl && model.features) {
+          featEl.innerHTML = model.features.map(f => `
+            <div class="feature-item">
+              <span class="feature-icon" aria-hidden="true">${getFeatureIconSvg(f.icon)}</span>
+              <span class="feature-text">${escapeHtml(f.text)}</span>
+            </div>
+          `).join("");
+        }
+
+        if (selectBtn) {
+          selectBtn.setAttribute("data-booking-value", model.bookingValue);
+          selectBtn.setAttribute("data-vehicle-name", model.name);
+          selectBtn.setAttribute("aria-label", `Select ${model.name} for booking`);
+        }
       });
     });
 
     // Bind Select Vehicle buttons
-    container.querySelectorAll(".btn-select-vehicle").forEach(btn => {
+    container.querySelectorAll(".btn-card-select-vehicle").forEach(btn => {
       btn.addEventListener("click", function () {
-        const vehicleName = this.getAttribute("data-vehicle-name");
-        window.SafeWayBooking.selectVehicle(vehicleName, true);
+        const bookingVal = this.getAttribute("data-booking-value");
+        const vehicleName = this.getAttribute("data-vehicle-name") || bookingVal;
+        const catId = this.getAttribute("data-category-id");
+
+        // Highlight selected card visually
+        container.querySelectorAll(".category-card").forEach(c => c.classList.remove("card-selected"));
+        const card = document.getElementById(`categoryCard-${catId}`);
+        if (card) card.classList.add("card-selected");
+
+        window.SafeWayBooking.selectVehicle(bookingVal, true);
         showToast(`Selected "${vehicleName}" in booking form.`);
       });
     });
 
-    // Bind Lightbox trigger clicks (Zoom icon, Card Media, and View Gallery button)
-    container.querySelectorAll(".fleet-zoom-trigger, .btn-view-gallery").forEach(btn => {
-      btn.addEventListener("click", function (e) {
-        e.stopPropagation();
-        const vId = this.getAttribute("data-vehicle-id");
-        const card = document.getElementById(`fleetCard-${vId}`);
-        const activePill = card ? card.querySelector(".view-toggle-pill.active") : null;
-        const currentView = activePill ? activePill.getAttribute("data-view") : "exterior";
-        openFleetLightbox(vId, currentView);
-      });
-    });
-
-    // Also clicking directly on the image opens lightbox
-    container.querySelectorAll(".fleet-img-container").forEach(el => {
-      el.addEventListener("click", function () {
-        const vId = this.getAttribute("data-vehicle-id");
-        const card = document.getElementById(`fleetCard-${vId}`);
-        const activePill = card ? card.querySelector(".view-toggle-pill.active") : null;
-        const currentView = activePill ? activePill.getAttribute("data-view") : "exterior";
-        openFleetLightbox(vId, currentView);
+    // Bind Lightbox on Image Click
+    container.querySelectorAll(".card-img-block").forEach(block => {
+      block.addEventListener("click", function () {
+        const catId = this.getAttribute("data-category-id");
+        const view = this.getAttribute("data-view") || "exterior";
+        const card = document.getElementById(`categoryCard-${catId}`);
+        const vehId = card ? card.getAttribute("data-active-vehicle-id") : "";
+        if (vehId) {
+          openFleetLightbox(vehId, view);
+        }
       });
     });
   }
