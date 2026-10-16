@@ -596,7 +596,7 @@
               <button type="button" class="btn-clear-vehicle" id="btnClearVehicle" aria-label="Change vehicle selection">Change</button>
             </div>
 
-            <div class="form-row-2">
+            <div class="form-row-3">
               <div class="form-group">
                 <label for="serviceType" class="form-label form-label-required">Service Type</label>
                 <select id="serviceType" name="serviceType" class="form-control" required>
@@ -610,7 +610,19 @@
               </div>
 
               <div class="form-group">
-                <label for="vehiclePreference" class="form-label">Vehicle Preference</label>
+                <label for="vehicleCategory" class="form-label">Vehicle Category</label>
+                <select id="vehicleCategory" name="vehicleCategory" class="form-control">
+                  <option value="Any Available" selected>Any Available (Comfort AC)</option>
+                  <option value="Sedan (AC)">Sedan (AC)</option>
+                  <option value="SUV / MUV (AC)">SUV / MUV (AC)</option>
+                  <option value="Compact City Cab">Compact City Cab</option>
+                  <option value="Custom Group / Tempo Traveller">Custom Group / Tempo Traveller</option>
+                </select>
+                <span class="field-error-message" id="vehicleCategoryError"></span>
+              </div>
+
+              <div class="form-group">
+                <label for="vehiclePreference" class="form-label">Preferred Vehicle Model</label>
                 <select id="vehiclePreference" name="vehiclePreference" class="form-control">
                   <option value="Any Available (Comfort AC)" selected>Any Available (Comfort AC)</option>
                   <option value="Toyota Etios — Sedan">Toyota Etios — Sedan</option>
@@ -618,8 +630,9 @@
                   <option value="Maruti Suzuki Ertiga — MUV">Maruti Suzuki Ertiga — MUV</option>
                   <option value="Toyota Rumion — MUV">Toyota Rumion — MUV</option>
                   <option value="Toyota Innova Hycross — MUV">Toyota Innova Hycross — MUV</option>
-                  <option value="Custom Group Vehicle">Custom Group Vehicle</option>
+                  <option value="Custom Group Vehicle (Tempo Traveller)">Custom Group Vehicle (Tempo Traveller)</option>
                 </select>
+                <span class="field-error-message" id="vehiclePreferenceError"></span>
               </div>
             </div>
 
@@ -688,15 +701,15 @@
             <div class="booking-notice-box">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
               <div>
-                <strong>How confirmation works:</strong> Clicking &ldquo;Book a Cab&rdquo; will format your complete trip details and open WhatsApp with SafeWay Travels (+91 9980838845). We will confirm vehicle availability and final transparent fare promptly.
+                <strong>How confirmation works:</strong> Clicking &ldquo;Send Booking Request on WhatsApp&rdquo; will format your complete trip details and open WhatsApp with SafeWay Travels (+91 9980838845). We will confirm vehicle availability and final transparent fare promptly.
               </div>
             </div>
 
             <!-- SUBMIT BUTTON -->
             <div class="booking-submit-area">
-              <button type="submit" class="btn btn-accent btn-lg btn-block" id="btnSubmitBooking">
+              <button type="submit" class="btn btn-accent btn-lg btn-block" id="btnSubmitBooking" aria-label="Send Booking Request on WhatsApp">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.16 12.04 20.16C10.66 20.16 9.3 19.8 8.09 19.11L7.79 18.93L4.69 19.74L5.52 16.72L5.32 16.41C4.55 15.08 4.14 13.52 4.14 11.91C4.14 7.37 7.84 3.67 12.05 3.67Z"></path></svg>
-                <span>BOOK A CAB VIA WHATSAPP</span>
+                <span>Send Booking Request on WhatsApp</span>
               </button>
               <p class="booking-submit-note">
                 Need urgent booking within the hour? <a href="tel:+919980838845" class="text-accent" style="font-weight: 700;">Call directly: +91 99808 38845</a>
@@ -1011,7 +1024,7 @@
         </div>
         <h3 class="modal-title" id="modalBookingTitle">Your Trip Request is Prepared</h3>
         <p class="modal-subtitle">
-          Hello <strong id="summaryCustomerName">Traveler</strong>, please send your details on WhatsApp to complete your booking request with SafeWay Travels.
+          Hello <strong id="summaryCustomerName">Traveler</strong>, your booking request has been formatted for WhatsApp (+91 9980838845).
         </p>
       </div>
 
@@ -1025,15 +1038,19 @@
 
         <div class="modal-instructions">
           <p>
-            <strong>Next Step:</strong> Tap &ldquo;Continue to WhatsApp&rdquo; to send this message to <strong>+91 9980838845</strong>. SafeWay Travels will confirm vehicle availability and quote your exact fare.
+            <strong>Note:</strong> Your booking is <em>confirmed only after SafeWay Travels responds</em> on WhatsApp with vehicle availability and final fare details.
           </p>
         </div>
 
         <div class="modal-actions">
-          <button type="button" class="btn btn-whatsapp btn-block btn-lg" id="btnContinueWhatsApp">
+          <a href="https://wa.me/919980838845" class="btn btn-whatsapp btn-block btn-lg" id="btnContinueWhatsApp" target="_blank" rel="noopener noreferrer">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.16 12.04 20.16C10.66 20.16 9.3 19.8 8.09 19.11L7.79 18.93L4.69 19.74L5.52 16.72L5.32 16.41C4.55 15.08 4.14 13.52 4.14 11.91C4.14 7.37 7.84 3.67 12.05 3.67Z"></path></svg>
-            <span>Continue to WhatsApp</span>
-          </button>
+            <span>Open WhatsApp to Send Request</span>
+          </a>
+
+          <p class="modal-fallback-text" id="modalFallbackText" style="margin-top: 4px; font-size: 0.85rem; color: var(--color-text-muted); text-align: center;">
+            If WhatsApp did not open automatically, tap the green button above.
+          </p>
 
           <a href="tel:+919980838845" class="btn btn-call btn-block">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>

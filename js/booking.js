@@ -1,14 +1,15 @@
 /**
  * SafeWay Travels - Booking Logic & Form Validation
  * ==================================================
- * Robust validation, pre-selection handlers, date constraints,
- * and seamless WhatsApp confirmation flow.
+ * Robust validation, two-way vehicle/category synchronization, date constraints,
+ * and direct WhatsApp booking flow.
+ * WhatsApp Destination: 919980838845
  */
 
 const SafeWayBooking = (function () {
   let formElement = null;
-  let successModal = null;
   let currentPreparedMessage = "";
+  let currentWhatsAppUrl = "";
   let lastSubmissionData = null;
 
   /**
@@ -24,18 +25,105 @@ const SafeWayBooking = (function () {
     setupVehiclePreferenceSync();
     setupFormSubmission();
     setupModalEvents();
+    setupRealtimeValidation();
+    setupGlobalBookingTriggers();
+  }
+
+  /**
+   * Constrains travel date input to today or future dates only
+   */
+  function setupDateInputConstraints() {
+    const dateInput = document.getElementById("travelDate");
+    if (!dateInput) return;
+
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    dateInput.min = `${yyyy}-${mm}-${dd}`;
+
+    dateInput.addEventListener("change", function () {
+      if (!this.value) {
+        setFieldError("travelDate", "Please select your travel date.");
+        return;
+      }
+      const selected = new Date(this.value + "T00:00:00");
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      if (selected < now) {
+        setFieldError("travelDate", "Travel date cannot be in the past. Please select today or a future date.");
+      } else {
+        clearFieldError("travelDate");
+      }
+    });
+  }
+
+  /**
+   * Phone number input formatting and realtime validation
+   */
+  function setupPhoneFormatting() {
+    const phoneInput = document.getElementById("customerPhone");
+    if (!phoneInput) return;
+
+    phoneInput.addEventListener("input", function () {
+      let val = this.value;
+      if (val.startsWith("+")) {
+        val = "+" + val.slice(1).replace(/\D/g, "");
+      } else {
+        val = val.replace(/\D/g, "");
+      }
+      this.value = val;
+
+      const digitsOnly = val.replace(/\D/g, "");
+      const cleanPhone = digitsOnly.startsWith("91") && digitsOnly.length === 12 ? digitsOnly.substring(2) : digitsOnly;
+      if (/^[6-9]\d{9}$/.test(cleanPhone)) {
+        clearFieldError("customerPhone");
+      }
+    });
+  }
+
+  /**
+   * Special requests chips toggler
+   */
+  function setupSpecialRequestChips() {
+    const chips = document.querySelectorAll(".chips-container .special-chip");
+    const textarea = document.getElementById("specialRequests");
+    if (!chips.length || !textarea) return;
+
+    chips.forEach(chip => {
+      chip.addEventListener("click", function () {
+        const tag = this.getAttribute("data-tag") || this.textContent.trim();
+        this.classList.toggle("active");
+        const isActive = this.classList.contains("active");
+
+        let currentVal = textarea.value.trim();
+        let items = currentVal ? currentVal.split(",").map(s => s.trim()).filter(Boolean) : [];
+
+        if (isActive) {
+          if (!items.includes(tag)) {
+            items.push(tag);
+          }
+        } else {
+          items = items.filter(item => item.toLowerCase() !== tag.toLowerCase());
+        }
+
+        textarea.value = items.join(", ");
+      });
+    });
   }
 
   /**
    * Syncs dropdown changes and clear vehicle button with the banner and gallery
    */
   function setupVehiclePreferenceSync() {
-    const vehicleSelect = document.getElementById("vehiclePreference");
+    const vehicleSelect = document.getElementById("vehiclePreference") || document.getElementById("vehicleModel");
+    const categorySelect = document.getElementById("vehicleCategory");
     const clearBtn = document.getElementById("btnClearVehicle");
 
     if (vehicleSelect) {
       vehicleSelect.addEventListener("change", function () {
         const val = this.value;
+        syncCategoryFromModel(val);
         if (val && !val.toLowerCase().includes("any available")) {
           updateVehicleBannerAndCard(val);
         } else {
@@ -45,10 +133,20 @@ const SafeWayBooking = (function () {
       });
     }
 
+    if (categorySelect) {
+      categorySelect.addEventListener("change", function () {
+        const catVal = this.value;
+        syncModelFromCategory(catVal);
+      });
+    }
+
     if (clearBtn) {
       clearBtn.addEventListener("click", function () {
         if (vehicleSelect) {
           vehicleSelect.selectedIndex = 0; // "Any Available (Comfort AC)"
+        }
+        if (categorySelect) {
+          categorySelect.selectedIndex = 0; // "Any Available"
         }
         hideVehicleBanner();
         clearFleetCardHighlights();
@@ -56,6 +154,64 @@ const SafeWayBooking = (function () {
           window.SafeWayUI.showToast("Vehicle preference reset to Any Available.");
         }
       });
+    }
+  }
+
+  /**
+   * Automatically select Category based on Model chosen
+   */
+  function syncCategoryFromModel(modelName) {
+    const categorySelect = document.getElementById("vehicleCategory");
+    if (!categorySelect || !modelName) return;
+
+    const lower = modelName.toLowerCase();
+    if (lower.includes("etios")) {
+      setSelectByValueSubstring(categorySelect, "Sedan");
+    } else if (lower.includes("innova") || lower.includes("ertiga") || lower.includes("rumion")) {
+      setSelectByValueSubstring(categorySelect, "SUV");
+    } else if (lower.includes("group") || lower.includes("traveller")) {
+      setSelectByValueSubstring(categorySelect, "Group");
+    } else if (lower.includes("any available")) {
+      categorySelect.selectedIndex = 0;
+    }
+  }
+
+  /**
+   * Automatically select default Model based on Category chosen
+   */
+  function syncModelFromCategory(categoryName) {
+    const vehicleSelect = document.getElementById("vehiclePreference") || document.getElementById("vehicleModel");
+    if (!vehicleSelect || !categoryName) return;
+
+    const lower = categoryName.toLowerCase();
+    if (lower.includes("sedan")) {
+      setSelectByValueSubstring(vehicleSelect, "Etios");
+      updateVehicleBannerAndCard(vehicleSelect.value);
+    } else if (lower.includes("suv") || lower.includes("muv")) {
+      setSelectByValueSubstring(vehicleSelect, "Innova Crysta");
+      updateVehicleBannerAndCard(vehicleSelect.value);
+    } else if (lower.includes("compact")) {
+      setSelectByValueSubstring(vehicleSelect, "Etios");
+      updateVehicleBannerAndCard(vehicleSelect.value);
+    } else if (lower.includes("group") || lower.includes("traveller")) {
+      setSelectByValueSubstring(vehicleSelect, "Custom Group");
+      updateVehicleBannerAndCard(vehicleSelect.value);
+    } else {
+      vehicleSelect.selectedIndex = 0;
+      hideVehicleBanner();
+      clearFleetCardHighlights();
+    }
+  }
+
+  function setSelectByValueSubstring(selectEl, substring) {
+    if (!selectEl) return;
+    const lower = substring.toLowerCase();
+    for (let i = 0; i < selectEl.options.length; i++) {
+      if (selectEl.options[i].value.toLowerCase().includes(lower) ||
+          selectEl.options[i].text.toLowerCase().includes(lower)) {
+        selectEl.selectedIndex = i;
+        break;
+      }
     }
   }
 
@@ -73,7 +229,6 @@ const SafeWayBooking = (function () {
       setTimeout(() => banner.classList.remove("banner-pulse"), 800);
     }
 
-    // Highlight corresponding card in the fleet gallery
     highlightFleetCard(vehicleName);
   }
 
@@ -129,8 +284,7 @@ const SafeWayBooking = (function () {
    */
   function selectService(serviceType, scrollIntoView = true) {
     const serviceSelect = document.getElementById("serviceType");
-    if (serviceSelect) {
-      // Find matching option
+    if (serviceSelect && serviceType) {
       for (let i = 0; i < serviceSelect.options.length; i++) {
         if (serviceSelect.options[i].value.toLowerCase().includes(serviceType.toLowerCase()) ||
             serviceType.toLowerCase().includes(serviceSelect.options[i].value.toLowerCase())) {
@@ -151,13 +305,14 @@ const SafeWayBooking = (function () {
   }
 
   /**
-   * Handles Pre-selection of Vehicle from Fleet section
+   * Handles Pre-selection of Vehicle from Fleet section / cards / lightbox
+   * Automatically fills in both Vehicle Category and Preferred Vehicle Model
    */
   function selectVehicle(vehicleName, scrollIntoView = true) {
-    const vehicleSelect = document.getElementById("vehiclePreference");
+    const vehicleSelect = document.getElementById("vehiclePreference") || document.getElementById("vehicleModel");
     let chosenVal = vehicleName;
 
-    if (vehicleSelect) {
+    if (vehicleSelect && vehicleName) {
       let matched = false;
       const lowerReq = vehicleName.toLowerCase();
       for (let i = 0; i < vehicleSelect.options.length; i++) {
@@ -176,6 +331,9 @@ const SafeWayBooking = (function () {
       }
     }
 
+    // Auto-sync the category dropdown as well
+    syncCategoryFromModel(chosenVal);
+
     updateVehicleBannerAndCard(chosenVal);
 
     if (window.SafeWayAnalytics) {
@@ -188,7 +346,7 @@ const SafeWayBooking = (function () {
   }
 
   /**
-   * Smoothly scrolls to the booking section
+   * Smoothly scrolls to the booking section and focuses the first input field
    */
   function scrollToBookingSection() {
     const bookingSection = document.getElementById("booking");
@@ -196,49 +354,92 @@ const SafeWayBooking = (function () {
       bookingSection.scrollIntoView({ behavior: "smooth", block: "start" });
       const firstInput = document.getElementById("customerName");
       if (firstInput) {
-        setTimeout(() => firstInput.focus(), 600);
+        setTimeout(() => firstInput.focus(), 500);
       }
     }
   }
 
   /**
-   * Form validation with friendly, clear error messages
+   * Binds global triggers so any button/link with "Book" or "Select Vehicle" navigates cleanly
+   */
+  function setupGlobalBookingTriggers() {
+    // Select all links with href="#booking"
+    document.querySelectorAll('a[href="#booking"]').forEach(link => {
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        scrollToBookingSection();
+      });
+    });
+  }
+
+  /**
+   * Clears inline field errors in real time as user interacts with inputs
+   */
+  function setupRealtimeValidation() {
+    const fieldIds = [
+      "customerName",
+      "customerPhone",
+      "customerEmail",
+      "serviceType",
+      "pickupLocation",
+      "dropLocation",
+      "travelDate",
+      "pickupTime",
+      "passengerCount"
+    ];
+
+    fieldIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener("input", () => clearFieldError(id));
+        el.addEventListener("change", () => clearFieldError(id));
+      }
+    });
+  }
+
+  /**
+   * Form validation with clear, friendly inline error messages
    */
   function validateForm() {
     let isValid = true;
+    let firstErrorField = null;
 
-    // 1. Full Name
+    function markInvalid(fieldId, errorMsg) {
+      setFieldError(fieldId, errorMsg);
+      isValid = false;
+      if (!firstErrorField) {
+        firstErrorField = document.getElementById(fieldId);
+      }
+    }
+
+    // 1. Full Name (Required, at least 2 characters)
     const nameInput = document.getElementById("customerName");
     const nameVal = nameInput ? nameInput.value.trim() : "";
     if (!nameVal || nameVal.length < 2) {
-      setFieldError("customerName", "Please enter your full name.");
-      isValid = false;
+      markInvalid("customerName", "Please enter your full name.");
     } else {
       clearFieldError("customerName");
     }
 
-    // 2. Phone Number (Valid Indian mobile: 10 digits, optionally with +91)
+    // 2. Phone Number (Required: 10-digit Indian mobile number, e.g. 9980838845)
     const phoneInput = document.getElementById("customerPhone");
     const rawPhone = phoneInput ? phoneInput.value.trim().replace(/\D/g, "") : "";
-    // If entered 12 digits starting with 91, strip 91 for length check
     const digitsOnly = rawPhone.startsWith("91") && rawPhone.length === 12 ? rawPhone.substring(2) : rawPhone;
     const phonePattern = /^[6-9]\d{9}$/;
 
     if (!digitsOnly || !phonePattern.test(digitsOnly)) {
-      setFieldError("customerPhone", "Please enter a valid 10-digit Indian mobile number (e.g. 9980838845).");
-      isValid = false;
+      markInvalid("customerPhone", "Please enter a valid 10-digit Indian mobile number (e.g. 9980838845).");
     } else {
       clearFieldError("customerPhone");
     }
 
-    // 3. Email (optional, but validate format if present)
+    // 3. Email (Optional, validate format if provided)
     const emailInput = document.getElementById("customerEmail");
     const emailVal = emailInput ? emailInput.value.trim() : "";
     if (emailVal) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(emailVal)) {
-        setFieldError("customerEmail", "Please enter a valid email address, or leave it blank.");
-        isValid = false;
+        markInvalid("customerEmail", "Please enter a valid email address, or leave it blank.");
       } else {
         clearFieldError("customerEmail");
       }
@@ -246,71 +447,77 @@ const SafeWayBooking = (function () {
       clearFieldError("customerEmail");
     }
 
-    // 4. Service Type
+    // 4. Service Type (Required)
     const serviceInput = document.getElementById("serviceType");
-    if (!serviceInput || !serviceInput.value) {
-      setFieldError("serviceType", "Please choose your service type (Local, Airport, Outstation, or Round Trip).");
-      isValid = false;
+    const serviceVal = serviceInput ? serviceInput.value : "";
+    if (!serviceVal) {
+      markInvalid("serviceType", "Please choose your service type (Local, Airport, Outstation, or Round Trip).");
     } else {
       clearFieldError("serviceType");
     }
 
-    // 5. Pickup Location
+    // 5. Pickup Location (Required)
     const pickupInput = document.getElementById("pickupLocation");
     const pickupVal = pickupInput ? pickupInput.value.trim() : "";
     if (!pickupVal) {
-      setFieldError("pickupLocation", "Please enter your pickup location in Bengaluru.");
-      isValid = false;
+      markInvalid("pickupLocation", "Please enter your pickup location in Bengaluru.");
     } else {
       clearFieldError("pickupLocation");
     }
 
-    // 6. Drop Location
+    // 6. Drop Location (Required where applicable: Airport, Outstation, Round Trip)
     const dropInput = document.getElementById("dropLocation");
     const dropVal = dropInput ? dropInput.value.trim() : "";
-    if (!dropVal) {
-      setFieldError("dropLocation", "Please enter your drop or destination location.");
-      isValid = false;
+    const isAirportOrOutstation = serviceVal && (
+      serviceVal.includes("Airport") ||
+      serviceVal.includes("Outstation") ||
+      serviceVal.includes("Round Trip")
+    );
+
+    if (!dropVal && isAirportOrOutstation) {
+      markInvalid("dropLocation", "Please enter your destination / drop location for " + serviceVal + ".");
+    } else if (!dropVal && !serviceVal) {
+      markInvalid("dropLocation", "Please enter your drop or destination location.");
     } else {
       clearFieldError("dropLocation");
     }
 
-    // 7. Travel Date
+    // 7. Travel Date (Required, prevent dates in the past)
     const dateInput = document.getElementById("travelDate");
     const dateVal = dateInput ? dateInput.value : "";
     if (!dateVal) {
-      setFieldError("travelDate", "Please select your travel date.");
-      isValid = false;
+      markInvalid("travelDate", "Please select your travel date.");
     } else {
-      const selected = new Date(dateVal);
+      const selected = new Date(dateVal + "T00:00:00");
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      selected.setHours(0, 0, 0, 0);
       if (selected < today) {
-        setFieldError("travelDate", "Travel date cannot be in the past. Please select today or a future date.");
-        isValid = false;
+        markInvalid("travelDate", "Travel date cannot be in the past. Please select today or a future date.");
       } else {
         clearFieldError("travelDate");
       }
     }
 
-    // 8. Pickup Time
+    // 8. Pickup Time (Required)
     const timeInput = document.getElementById("pickupTime");
     if (!timeInput || !timeInput.value) {
-      setFieldError("pickupTime", "Please choose your preferred pickup time.");
-      isValid = false;
+      markInvalid("pickupTime", "Please choose your preferred pickup time.");
     } else {
       clearFieldError("pickupTime");
     }
 
-    // 9. Passengers
+    // 9. Passengers (Required, >= 1)
     const passengerInput = document.getElementById("passengerCount");
     const passengers = passengerInput ? parseInt(passengerInput.value, 10) : 1;
     if (isNaN(passengers) || passengers < 1) {
-      setFieldError("passengerCount", "Please select at least 1 passenger.");
-      isValid = false;
+      markInvalid("passengerCount", "Please select at least 1 passenger.");
     } else {
       clearFieldError("passengerCount");
+    }
+
+    if (!isValid && firstErrorField) {
+      firstErrorField.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTimeout(() => firstErrorField.focus(), 350);
     }
 
     return isValid;
@@ -343,87 +550,121 @@ const SafeWayBooking = (function () {
   }
 
   /**
-   * Sets up form submission handler
+   * Sets up form submission handler and executes WhatsApp integration
    */
   function setupFormSubmission() {
     formElement.addEventListener("submit", function (e) {
       e.preventDefault();
 
       if (!validateForm()) {
-        // Focus first field with error
-        const firstError = formElement.querySelector(".input-error");
-        if (firstError) {
-          firstError.focus();
-        }
         return;
       }
 
+      const submitBtn = document.getElementById("btnSubmitBooking");
+      let originalBtnContent = "";
+      if (submitBtn) {
+        originalBtnContent = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" class="btn-spinner" aria-hidden="true" style="animation: spin 1s linear infinite;"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>
+          <span>Connecting to WhatsApp...</span>
+        `;
+      }
+
       // Collect form data
-      const data = {
+      const categoryEl = document.getElementById("vehicleCategory");
+      const modelEl = document.getElementById("vehiclePreference") || document.getElementById("vehicleModel");
+      const dropEl = document.getElementById("dropLocation");
+
+      const booking = {
         name: document.getElementById("customerName").value.trim(),
         phone: document.getElementById("customerPhone").value.trim(),
         email: document.getElementById("customerEmail") ? document.getElementById("customerEmail").value.trim() : "",
-        service: document.getElementById("serviceType").value,
+        serviceType: document.getElementById("serviceType").value,
         pickup: document.getElementById("pickupLocation").value.trim(),
-        drop: document.getElementById("dropLocation").value.trim(),
+        dropoff: dropEl ? dropEl.value.trim() : "",
         date: document.getElementById("travelDate").value,
         time: document.getElementById("pickupTime").value,
         passengers: document.getElementById("passengerCount").value,
-        vehicle: document.getElementById("vehiclePreference").value,
-        specialRequests: document.getElementById("specialRequests") ? document.getElementById("specialRequests").value.trim() : ""
+        vehicleCategory: categoryEl ? categoryEl.value : "",
+        vehicleModel: modelEl ? modelEl.value : "",
+        notes: document.getElementById("specialRequests") ? document.getElementById("specialRequests").value.trim() : ""
       };
 
-      lastSubmissionData = data;
+      // Aliases for compatibility
+      booking.service = booking.serviceType;
+      booking.drop = booking.dropoff;
+      booking.vehicle = booking.vehicleModel;
+      booking.specialRequests = booking.notes;
+
+      lastSubmissionData = booking;
 
       // Track analytics
       if (window.SafeWayAnalytics) {
         window.SafeWayAnalytics.trackEvent("booking_form_submitted", {
-          service: data.service,
-          vehicle: data.vehicle,
-          passengers: data.passengers
+          service: booking.serviceType,
+          vehicle: booking.vehicleModel,
+          passengers: booking.passengers
         });
       }
 
-      // Generate structured message
-      currentPreparedMessage = window.SafeWayWhatsApp.generateBookingMessage(data);
+      // Send to WhatsApp via SafeWayWhatsApp.sendBookingToWhatsApp
+      const waResult = window.SafeWayWhatsApp.sendBookingToWhatsApp(booking);
+      currentPreparedMessage = waResult.message;
+      currentWhatsAppUrl = waResult.url;
 
-      // Show confirmation modal
-      showSuccessModal(data);
+      // Display informative modal with trip preview and clickable fallback link
+      showSuccessModal(booking, currentWhatsAppUrl);
 
-      // Automatically launch WhatsApp in new tab for best frictionless experience
-      window.SafeWayWhatsApp.openWhatsApp(currentPreparedMessage);
+      // Re-enable button after brief loading state
+      setTimeout(() => {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalBtnContent || `
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.16 12.04 20.16C10.66 20.16 9.3 19.8 8.09 19.11L7.79 18.93L4.69 19.74L5.52 16.72L5.32 16.41C4.55 15.08 4.14 13.52 4.14 11.91C4.14 7.37 7.84 3.67 12.05 3.67Z"></path></svg>
+            <span>Send Booking Request on WhatsApp</span>
+          `;
+        }
+      }, 1200);
     });
   }
 
   /**
-   * Displays the "Booking Request Ready" modal
+   * Displays the "Booking Request Ready" modal with summary & fallback button
    */
-  function showSuccessModal(data) {
+  function showSuccessModal(data, whatsappUrl) {
     const modal = document.getElementById("bookingModal");
     if (!modal) return;
 
-    // Populate preview elements
     const summaryName = document.getElementById("summaryCustomerName");
     const summaryTrip = document.getElementById("summaryTripDetails");
     const summaryService = document.getElementById("summaryService");
 
     if (summaryName) summaryName.textContent = data.name;
-    if (summaryService) summaryService.textContent = data.service;
+    if (summaryService) summaryService.textContent = data.serviceType;
     if (summaryTrip) {
       summaryTrip.innerHTML = `
+        <strong>Customer:</strong> ${escapeHtml(data.name)} (${escapeHtml(data.phone)})<br>
+        <strong>Service:</strong> ${escapeHtml(data.serviceType)}<br>
         <strong>Pickup:</strong> ${escapeHtml(data.pickup)}<br>
-        <strong>Drop:</strong> ${escapeHtml(data.drop)}<br>
-        <strong>Date & Time:</strong> ${escapeHtml(data.date)} at ${escapeHtml(data.time)}<br>
-        <strong>Passengers:</strong> ${escapeHtml(data.passengers)} | <strong>Vehicle:</strong> ${escapeHtml(data.vehicle)}
+        <strong>Drop-off:</strong> ${escapeHtml(data.dropoff || "Not specified")}<br>
+        <strong>Date &amp; Time:</strong> ${escapeHtml(data.date)} at ${escapeHtml(data.time)}<br>
+        <strong>Passengers:</strong> ${escapeHtml(data.passengers)}<br>
+        <strong>Vehicle Category:</strong> ${escapeHtml(data.vehicleCategory || "Not selected")}<br>
+        <strong>Preferred Vehicle:</strong> ${escapeHtml(data.vehicleModel || "Not selected")}
+        ${data.notes ? `<br><strong>Additional Requirements:</strong> ${escapeHtml(data.notes)}` : ""}
       `;
+    }
+
+    const continueBtn = document.getElementById("btnContinueWhatsApp");
+    if (continueBtn) {
+      continueBtn.href = whatsappUrl || `https://wa.me/919980838845?text=${encodeURIComponent(currentPreparedMessage)}`;
     }
 
     modal.classList.add("modal-open");
     modal.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden"; // Prevent background scroll
+    document.body.style.overflow = "hidden";
 
-    // Focus WhatsApp action button
-    const continueBtn = document.getElementById("btnContinueWhatsApp");
     if (continueBtn) {
       setTimeout(() => continueBtn.focus(), 150);
     }
@@ -436,45 +677,48 @@ const SafeWayBooking = (function () {
     const modal = document.getElementById("bookingModal");
     if (!modal) return;
 
-    const closeBtns = modal.querySelectorAll("[data-close-modal]");
-    closeBtns.forEach(btn => {
-      btn.addEventListener("click", closeModal);
-    });
+    const closeBtns = modal.querySelectorAll ? modal.querySelectorAll("[data-close-modal]") : [];
+    if (closeBtns && closeBtns.forEach) {
+      closeBtns.forEach(btn => {
+        btn.addEventListener("click", closeModal);
+      });
+    }
 
-    // Close on clicking backdrop
     modal.addEventListener("click", function (e) {
       if (e.target === modal) {
         closeModal();
       }
     });
 
-    // Close on Esc key
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape" && modal.classList.contains("modal-open")) {
         closeModal();
       }
     });
 
-    // Continue to WhatsApp button
     const continueBtn = document.getElementById("btnContinueWhatsApp");
     if (continueBtn) {
-      continueBtn.addEventListener("click", function () {
-        if (currentPreparedMessage) {
-          window.SafeWayWhatsApp.openWhatsApp(currentPreparedMessage);
+      continueBtn.addEventListener("click", function (e) {
+        if (currentWhatsAppUrl) {
+          continueBtn.href = currentWhatsAppUrl;
+        } else if (currentPreparedMessage) {
+          continueBtn.href = window.SafeWayWhatsApp.buildWhatsAppUrl(currentPreparedMessage);
         }
       });
     }
 
-    // Copy message fallback button
     const copyBtn = document.getElementById("btnCopyWhatsAppMessage");
     if (copyBtn) {
       copyBtn.addEventListener("click", function () {
         if (currentPreparedMessage) {
           navigator.clipboard.writeText(currentPreparedMessage).then(() => {
-            const originalText = copyBtn.textContent;
-            copyBtn.textContent = "Copied to Clipboard!";
+            const originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = `
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Copied to Clipboard!</span>
+            `;
             setTimeout(() => {
-              copyBtn.textContent = originalText;
+              copyBtn.innerHTML = originalText;
             }, 2500);
           }).catch(() => {
             alert("Please copy message manually: \n\n" + currentPreparedMessage);
@@ -508,6 +752,7 @@ const SafeWayBooking = (function () {
     selectService,
     selectVehicle,
     scrollToBookingSection,
+    validateForm,
     closeModal
   };
 })();

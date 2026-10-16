@@ -55,7 +55,19 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // 5. Contact Section Form handler (Quick inquiry to WhatsApp)
+  // 5. Universal binding for all "Book a Cab", "Book Now", "Select Vehicle" buttons/links
+  document.querySelectorAll('a[href="#booking"], button[data-action="book"]').forEach(el => {
+    el.addEventListener("click", function (e) {
+      if (this.getAttribute("href") === "#booking") {
+        e.preventDefault();
+      }
+      if (window.SafeWayBooking) {
+        window.SafeWayBooking.scrollToBookingSection();
+      }
+    });
+  });
+
+  // 6. Contact Section Form handler (Quick inquiry to WhatsApp)
   const contactForm = document.getElementById("contactInquiryForm");
   if (contactForm) {
     contactForm.addEventListener("submit", function (e) {
@@ -83,7 +95,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // 6. Set dynamic copyright year
+  // 7. Set dynamic copyright year
   const copyrightYear = document.getElementById("currentYear");
   if (copyrightYear) {
     copyrightYear.textContent = new Date().getFullYear();
